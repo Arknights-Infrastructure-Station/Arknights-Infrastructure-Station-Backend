@@ -1,0 +1,83 @@
+custom-data:
+  url: "http://localhost:8080"
+caching:
+  specs:
+    PNGStorage:
+      timeout: 10 #超时时间，分钟
+      max: 200 #最大缓存条目数，超过则按“最近最少使用”算法移除旧的条目
+    workFileList:
+      timeout: 1
+      max: 500
+    workFileListCount:
+      timeout: 1
+      max: 500
+    postedWorkFileList:
+      timeout: 1
+      max: 200
+    postedWorkFileListCount:
+      timeout: 1
+      max: 200
+    stagingWorkFileList:
+      timeout: 1
+      max: 200
+    stagingWorkFileListCount:
+      timeout: 1
+      max: 200
+    recyclingWorkFileList:
+      timeout: 1
+      max: 200
+    recyclingWorkFileListCount:
+      timeout: 1
+      max: 200
+    staredWorkFileList:
+      timeout: 1
+      max: 200
+    staredWorkFileListCount:
+      timeout: 1
+      max: 200
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/arknights_infrastructure_station?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    username: root
+    password: 126345
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: 127.0.0.1
+      port: 6379
+      password:
+      database: 0
+      connect-timeout: 1800000
+      lettuce:
+        pool:
+          max-active: 20
+          max-wait: -1
+          max-idle: 5
+          min-idle: 0
+      timeout: 5000 # 连接超时时间（毫秒）
+  mail:
+    host: smtp.163.com
+    port: 465
+    username: ark_infra_station@163.com
+    password: ZQHRIPPCAJIFJVEF
+    properties:
+      mail:
+        smtp:
+          auth: true
+          socketFactory:
+            class: javax.net.ssl.SSLSocketFactory
+            fallback: false
+            port: 465
+          starttls:
+            enable: true
+            required: true
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    com.baomidou.mybatisplus: DEBUG
+    org.mybatis: DEBUG
+

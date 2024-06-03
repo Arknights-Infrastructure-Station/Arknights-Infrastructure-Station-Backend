@@ -1,0 +1,15 @@
+package com.arknightsinfrastructurestationbackend;
+
+import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+@MapperScan("com.arknightsinfrastructurestationbackend.mapper")
+public class ArknightsInfrastructureStationBackendApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(ArknightsInfrastructureStationBackendApplication.class, args);
+	}
+
+}
