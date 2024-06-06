@@ -16,6 +16,7 @@ public class F_StagingWorkFile {
     private String layout; // 作业采用的基建布局
     private String stagingDate; // 作业暂存时间
     private String description; // 作业描述
+    private String descriptionPictures; //作业描述图片数组
     private String storageType; // 作业内容存储方式
     private String fileContent; // 作业文件内容
     private String fileRequest; // 作业文件要求

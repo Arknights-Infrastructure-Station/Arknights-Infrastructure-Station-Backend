@@ -17,10 +17,12 @@ public class F_WorkFile {
     private String layout; // 作业采用的基建布局
     private String releaseDate; // 作业发布时间
     private String description; // 作业描述
+    private String descriptionPictures; //作业描述图片数组
     private String storageType; // 作业内容存储方式
     private String fileContent; // 作业文件内容
     private String fileRequest; // 作业文件要求
     private Integer starNumber; // 作业收藏数量
     private Integer downloadNumber; // 作业下载数量
+    private Float score; //作业评分
 }
 

@@ -35,6 +35,8 @@ public class StagingWorkFile implements WorkFileInterface {
 
     private String description; //作业描述
 
+    private String descriptionPictures; //作业描述图片数组，JSON字符串格式，适配MySQL数据类型
+
     private String storageType; //作业内容存储类型
 
     private String fileContent; //作业文件内容

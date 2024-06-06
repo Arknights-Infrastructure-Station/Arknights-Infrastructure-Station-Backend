@@ -26,6 +26,8 @@ public class RecyclingWorkFile {
 
     private String description; //作业描述
 
+    private String descriptionPictures; //作业描述图片数组，JSON字符串格式，适配MySQL数据类型
+
     private String storageType; //作业内容存储类型
 
     private String fileContent; //作业文件内容，非空
@@ -36,14 +38,17 @@ public class RecyclingWorkFile {
 
     private Integer downloadNumber; //作业下载数量，还原的时候保持不变
 
+    private Float score; //作业评分，若为-1则表示暂无评分
+
     private String clearTime; //作业清除时间，后端会根据这个清除时间定时清除指定的作业记录
 
     public WorkFile toWorkFile() {
         return new WorkFile(id, author,
                 authorId, name,
                 type, layout,
-                releaseDate, description, storageType,
+                releaseDate, description,
+                descriptionPictures, storageType,
                 fileContent, fileRequest,
-                starNumber, downloadNumber);
+                starNumber, downloadNumber, score);
     }
 }

@@ -34,6 +34,8 @@ public class WorkFile implements WorkFileInterface {
 
     private String description; //作业描述
 
+    private String descriptionPictures; //作业描述图片数组，JSON字符串格式，适配MySQL数据类型
+
     private String storageType; //作业内容存储类型，分为纯文本存储和图片文件key存储
 
     private String fileContent; //作业文件内容（纯文本或是图片文件key），非空
@@ -44,13 +46,16 @@ public class WorkFile implements WorkFileInterface {
 
     private Integer downloadNumber; //作业下载数量，创建作业的时候默认为0
 
+    private Float score; //作业评分，若为-1则表示该作业暂无评分
+
     public RecyclingWorkFile toRecyclingWorkFile() {
         return new RecyclingWorkFile(id, author,
                 authorId, name,
                 type, layout,
-                releaseDate, description, storageType,
+                releaseDate, description,
+                descriptionPictures, storageType,
                 fileContent, fileRequest,
                 starNumber, downloadNumber,
-                null);
+                score,null);
     }
 }

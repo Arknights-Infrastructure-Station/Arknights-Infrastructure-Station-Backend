@@ -1,9 +1,7 @@
 package com.arknightsinfrastructurestationbackend.common.tools;
 
-import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_RecyclingWorkFile;
-import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_StagingWorkFile;
-import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_StarRecord;
-import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_WorkFile;
+import com.arknightsinfrastructurestationbackend.entitiy.user.UserRate;
+import com.arknightsinfrastructurestationbackend.dto.wrapperClass.*;
 import com.arknightsinfrastructurestationbackend.entitiy.user.StarRecord;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.StagingWorkFile;
@@ -118,6 +116,24 @@ public class FileConverter {
         return fStarRecord;
     }
 
+    public static UserRate FB(F_UserRate fUserRate) {
+        if (fUserRate == null) {
+            return null;
+        }
+        UserRate userRate = new UserRate();
+        copyProperties(fUserRate, userRate);
+        return userRate;
+    }
+
+    public static F_UserRate FB(UserRate userRate) {
+        if (userRate == null) {
+            return null;
+        }
+        F_UserRate fUserRate = new F_UserRate();
+        copyProperties(userRate, fUserRate);
+        return fUserRate;
+    }
+
     public static List<WorkFile> F2BWL(List<F_WorkFile> fWorkFileList) {
         if (fWorkFileList == null) {
             return null;
@@ -186,6 +202,24 @@ public class FileConverter {
             return null;
         }
         return starRecordList.stream()
+                .map(FileConverter::FB)
+                .collect(Collectors.toList());
+    }
+
+    public static List<UserRate> F2BUR(List<F_UserRate> fUserRates) {
+        if (fUserRates == null) {
+            return null;
+        }
+        return fUserRates.stream()
+                .map(FileConverter::FB)
+                .collect(Collectors.toList());
+    }
+
+    public static List<F_UserRate> B2FUR(List<UserRate> userRates) {
+        if (userRates == null) {
+            return null;
+        }
+        return userRates.stream()
                 .map(FileConverter::FB)
                 .collect(Collectors.toList());
     }

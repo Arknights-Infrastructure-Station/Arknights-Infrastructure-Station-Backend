@@ -11,6 +11,7 @@ import com.arknightsinfrastructurestationbackend.entitiy.user.UploadWorkFileCoun
 import com.arknightsinfrastructurestationbackend.entitiy.user.User;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
 import com.arknightsinfrastructurestationbackend.global.type.RefreshType;
+import com.arknightsinfrastructurestationbackend.global.type.SortOrderType;
 import com.arknightsinfrastructurestationbackend.global.type.StorageType;
 import com.arknightsinfrastructurestationbackend.mapper.user.UploadWorkFileCountMapper;
 import com.arknightsinfrastructurestationbackend.mapper.workFile.WorkFileMapper;
@@ -20,7 +21,6 @@ import com.arknightsinfrastructurestationbackend.service.utils.CommonService;
 import com.arknightsinfrastructurestationbackend.service.workFile.adapter.AdapterService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -34,7 +34,6 @@ import java.util.List;
 public class WorkFileService {
     private final WorkFileMapper workFileMapper;
     private final SelectUserService selectUserService;
-    private final ObjectMapper objectMapper;
     private final MowerBucketService mowerBucketService;
     private final UploadWorkFileCountMapper uploadWorkFileCountMapper;
     private final CommonService commonService;
@@ -51,6 +50,7 @@ public class WorkFileService {
         workFile.setAuthorId(user.getId());
         workFile.setAuthor(user.getUsername());
         workFile.setReleaseDate(commonService.getCurrentDateTime());
+        workFile.setScore(-1f);
 
         if (StorageType.PICTURE_KEY.getValue().equals(workFile.getStorageType())) {
             //如果存储方式为图片方式，那么将图片字节流存入对象存储桶，将存储的key存入FileContent中
@@ -203,7 +203,7 @@ public class WorkFileService {
     4.返回刷新后的结果。
     5.@Cacheable注解会将最终的结果存入缓存。
      */
-    @ListDataRefresh({RefreshType.DS})
+    @ListDataRefresh({RefreshType.DSS})
     @Cacheable("workFileList")
     @RedisLock(key = "'lock:WorkFileService:screenWorkFileList:' + #workFileScreen.hashCode()")
     public List<WorkFile> screenWorkFileList(WorkFileScreen workFileScreen) {
@@ -258,8 +258,14 @@ public class WorkFileService {
                             .or().like(WorkFile::getAuthorId, workFileScreen.getWorkQuery()));
         }
 
-        //倒序返回
-        queryWrapper.orderByDesc(WorkFile::getReleaseDate);
+        if (SortOrderType.RELEASE_DATE_DESC.getValue().equals(workFileScreen.getSortOrder()))
+            queryWrapper.orderByDesc(WorkFile::getReleaseDate);
+        else if (SortOrderType.RELEASE_DATE_ASC.getValue().equals(workFileScreen.getSortOrder()))
+            queryWrapper.orderByAsc(WorkFile::getReleaseDate);
+        else if (SortOrderType.SCORE_DESC.getValue().equals(workFileScreen.getSortOrder()))
+            queryWrapper.orderByDesc(WorkFile::getScore);
+        else if (SortOrderType.SCORE_ASC.getValue().equals(workFileScreen.getSortOrder()))
+            queryWrapper.orderByAsc(WorkFile::getScore);
 
         return queryWrapper;
     }
@@ -271,7 +277,7 @@ public class WorkFileService {
      * @param workFileSimpleSearch 作业筛选简单参数
      * @return 符合条件的作业列表
      */
-    @ListDataRefresh({RefreshType.DS})
+    @ListDataRefresh({RefreshType.DSS})
     @Cacheable("postedWorkFileList")
     public List<WorkFile> screenPostedWorkFileList(String token, WorkFileSimpleSearch workFileSimpleSearch) {
         User user = selectUserService.getUserByToken(token);

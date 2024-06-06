@@ -11,6 +11,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -72,5 +74,20 @@ public class CommonService {
         LocalDateTime now = LocalDateTime.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         return now.format(formatter);
+    }
+
+    /**
+     * Rounds a float to the specified number of decimal places.
+     *
+     * @param value the float value to be rounded
+     * @param places the number of decimal places to round to
+     * @return the rounded float value
+     */
+    public float round(float value, int places) {
+        if (places < 0) throw new IllegalArgumentException("位数必须是非负的");
+
+        BigDecimal bd = new BigDecimal(Float.toString(value));
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.floatValue();
     }
 }

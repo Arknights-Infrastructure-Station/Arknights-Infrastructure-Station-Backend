@@ -28,9 +28,9 @@ public class ListDataRefreshAspect {
         List<W> workFileList = (List<W>) joinPoint.proceed();
 
         for (RefreshType param : params) {
-            if (param == RefreshType.DS) {
+            if (param == RefreshType.DSS) {
                 //配置DS属性的只会是返回值类型为List<WorkFile>的方法
-                refreshWorkFileDataService.refreshStarAndDownloadNumber((List<WorkFile>) workFileList);
+                refreshWorkFileDataService.refreshWorkFileData((List<WorkFile>) workFileList);
             }
             //PK暂时禁用，图片value的获取改为懒加载
 //            if (param == RefreshType.PK) {

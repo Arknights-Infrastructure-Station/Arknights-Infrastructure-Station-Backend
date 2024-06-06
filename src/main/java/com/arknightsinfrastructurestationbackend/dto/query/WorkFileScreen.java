@@ -13,6 +13,7 @@ public class WorkFileScreen {
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") //日期格式化注解
     private List<Date> dateRange; //日期范围
     private String workQuery; //模糊查询字符串，涵盖作业名称、作业描述、发布者名称、发布者ID
+    private String sortOrder; //排序方式
     private int currentPage; //当前页
     private int pageSize; //页大小
 
