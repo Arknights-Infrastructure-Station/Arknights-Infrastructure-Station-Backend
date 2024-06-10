@@ -63,5 +63,4 @@ class ArknightsInfrastructureStationBackendApplicationTests {
         JSONObject resultJson = new JSONObject(result.getResult());
         assertFalse(resultJson.getBoolean("hasExchange"));
     }
-
 }

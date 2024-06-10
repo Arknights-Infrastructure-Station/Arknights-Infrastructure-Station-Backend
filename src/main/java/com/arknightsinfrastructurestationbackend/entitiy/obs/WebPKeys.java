@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@TableName("`png_keys`")
-public class PNGKeys {
+@TableName("`webp_keys`")
+public class WebPKeys {
     @TableField("`key`")
     private String key;
 }

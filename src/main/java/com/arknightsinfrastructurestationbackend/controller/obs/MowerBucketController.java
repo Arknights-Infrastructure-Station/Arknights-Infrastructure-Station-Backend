@@ -17,13 +17,13 @@ public class MowerBucketController {
     private final MowerBucketService mowerBucketService;
 
     /**
-     * 根据键从对象存储服务中获取PNG文件的数据URL
+     * 根据键从对象存储服务中获取WebP文件的数据URL
      *
      * @param key 对象存储服务中的键
-     * @return 对应的PNG文件的数据URL
+     * @return 对应的WebP文件的数据URL
      */
-    @GetMapping("/png/{key}")
-    public String getPngByKey(@PathVariable String key) {
-        return mowerBucketService.syncDownloadPng(key);
+    @GetMapping("/webp/{key}")
+    public String getWebPByKey(@PathVariable String key) {
+        return mowerBucketService.syncDownloadWebP(key);
     }
 }

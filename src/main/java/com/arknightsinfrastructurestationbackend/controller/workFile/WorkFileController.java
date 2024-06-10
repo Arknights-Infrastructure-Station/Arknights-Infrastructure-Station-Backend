@@ -9,6 +9,7 @@ import com.arknightsinfrastructurestationbackend.dto.query.WorkFileScreen;
 import com.arknightsinfrastructurestationbackend.dto.query.WorkFileSimpleSearch;
 import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_WorkFile;
 import com.arknightsinfrastructurestationbackend.service.workFile.WorkFileService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -38,7 +39,7 @@ public class WorkFileController {
         OperateResult result;
         try {
             result = workFileService.insertWorkFile(token, FileConverter.FB(workFile));
-        } catch (ServiceException e) {
+        } catch (ServiceException | JsonProcessingException e) {
             result = new OperateResult(500, e.getMessage());
         }
         return ResponseEntity.ok(new OperateAndWorkFileListResult(result, null, null));
@@ -53,15 +54,20 @@ public class WorkFileController {
     @PostMapping("/update")
     public ResponseEntity<Object> updateWorkFile(HttpServletRequest request, @RequestBody F_WorkFile workFile) {
         String token = Token.getTokenByRequest(request);
-        OperateResult result = workFileService.updateWorkFile(token, FileConverter.FB(workFile));
+        OperateResult result;
+        try {
+            result = workFileService.updateWorkFile(token, FileConverter.FB(workFile));
+        } catch (JsonProcessingException e) {
+            result = new OperateResult(500, e.getMessage());
+        }
         return ResponseEntity.ok(new OperateAndWorkFileListResult(result, null, null));
     }
 
     // 删除作业 暂时用不到，因为用户的删除逻辑是 放入回收箱->手动/自动删除回收箱作业 直接删除作业文件是开发人员后台管理用的
 //    @PostMapping("/delete")
-    public ResponseEntity<Object> deleteWorkFile(HttpServletRequest request, @RequestBody String wid) {
+    public ResponseEntity<Object> deleteWorkFile(HttpServletRequest request, @RequestBody WorkFileSimpleSearch workFileSimpleSearch) {
         String token = Token.getTokenByRequest(request);
-        OperateResult result = workFileService.deleteWorkFile(token, Long.valueOf(wid));
+        OperateResult result = workFileService.deleteWorkFile(token, Long.valueOf(workFileSimpleSearch.getWid()));
         return ResponseEntity.ok(new OperateAndWorkFileListResult(result, null, null));
     }
 

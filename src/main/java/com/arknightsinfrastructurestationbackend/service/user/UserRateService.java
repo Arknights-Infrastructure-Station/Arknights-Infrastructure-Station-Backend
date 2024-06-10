@@ -39,9 +39,9 @@ public class UserRateService {
             if (value == ScoreNumber.NULL.getValue()) {
                 //如果用户的评分值为-1（由前端自动指定），那么删除该用户对这条作业的评分记录
                 if (userRateMapper.delete(queryWrapper) > 0) {
-                    return new OperateResult(200, "评分记录删除成功");
+                    return new OperateResult(200, "取消评分成功");
                 } else {
-                    return new OperateResult(500, "评分记录删除失败");
+                    return new OperateResult(500, "取消评分失败");
                 }
             } else if (value == ScoreNumber.LIKE.getValue() || value == ScoreNumber.DISLIKE.getValue()) {
                 //前端已经做了筛选，只有在评分值与原来不同时才会调用评分方法
@@ -52,7 +52,7 @@ public class UserRateService {
                     return new OperateResult(500, "评分修改失败");
                 }
             } else {
-                return new OperateResult(405, "评分不合理");
+                return new OperateResult(400, "评分不合理");
             }
         } else {
             //还没有评分记录
@@ -67,7 +67,7 @@ public class UserRateService {
                     return new OperateResult(500, "评分失败");
                 }
             } else {
-                return new OperateResult(405, "评分不合理");
+                return new OperateResult(400, "评分不合理");
             }
         }
     }
@@ -86,7 +86,7 @@ public class UserRateService {
     /**
      * 计算作业评分
      *
-     * @param wid 作业ID
+     * @param workFileSimpleSearch 仅包含作业ID的DTO
      * @return 作业评分
      */
     public Float getScoreForWork(Long wid) {

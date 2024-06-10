@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.arknightsinfrastructurestationbackend.common.tools.JsonWorkProcessor;
 import com.arknightsinfrastructurestationbackend.common.tools.Log;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
-import com.arknightsinfrastructurestationbackend.config.JWTUtil;
+import com.arknightsinfrastructurestationbackend.config.filter.JWTUtil;
 import com.arknightsinfrastructurestationbackend.entitiy.user.User;
 import com.arknightsinfrastructurestationbackend.dto.info.InfrastructureInfo;
 import com.arknightsinfrastructurestationbackend.dto.info.OperatorInfo;

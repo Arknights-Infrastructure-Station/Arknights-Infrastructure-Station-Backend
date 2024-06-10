@@ -21,6 +21,8 @@ import com.arknightsinfrastructurestationbackend.service.utils.CommonService;
 import com.arknightsinfrastructurestationbackend.service.workFile.adapter.AdapterService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -40,10 +42,20 @@ public class WorkFileService {
     private final AdapterService adapterService;
 
     @Transactional(rollbackFor = ServiceException.class)
-    public OperateResult insertWorkFile(String token, WorkFile workFile) throws ServiceException {
+    public OperateResult insertWorkFile(String token, WorkFile workFile) throws ServiceException, JsonProcessingException {
         User user = selectUserService.getUserByToken(token);
         if (user == null) {
             return new OperateResult(404, "用户未找到");
+        }
+
+        // 检查该用户是否已达到上传次数上限
+        UploadWorkFileCount uploadWorkFileCount = uploadWorkFileCountMapper.selectById(user.getId());
+        if (uploadWorkFileCount != null) {
+            if (uploadWorkFileCount.getCount() >= 50) { // 限制每天只能上传50份作业文件
+                String exceptionLog = "用户：" + user.getId() + "(" + user.getUsername() + ") 于" + commonService.getCurrentDateTime() + "达到上传作业文件上限次数";
+                Log.error(exceptionLog);
+                throw new ServiceException("已达到今日上传次数上限");
+            }
         }
 
         // 作业id由数据库自动增长字段生成
@@ -53,22 +65,16 @@ public class WorkFileService {
         workFile.setScore(-1f);
 
         if (StorageType.PICTURE_KEY.getValue().equals(workFile.getStorageType())) {
-            //如果存储方式为图片方式，那么将图片字节流存入对象存储桶，将存储的key存入FileContent中
-            String key = mowerBucketService.uploadPng(workFile.getFileContent());
-            workFile.setFileContent(key); //如果存储失败，那么返回的key会是null，而fileContent字段被设置为非null，会制止异常数据的插入
+            // 如果存储方式为图片方式，那么将图片字节流存入对象存储桶，将存储的key存入FileContent中
+            String key = mowerBucketService.uploadWebP(workFile.getFileContent());
+            workFile.setFileContent(key); // 如果存储失败，那么返回的key会是null，而fileContent字段被设置为非null，会制止异常数据的插入
         }
 
+        // 替换完成后，重设字段
+        workFile.setDescriptionPictures(mowerBucketService.picturesUpload(workFile.getDescriptionPictures()));
+
         if (workFileMapper.insert(workFile) > 0) {
-
-            // 检查该用户是否已达到上传次数上限
-            UploadWorkFileCount uploadWorkFileCount = uploadWorkFileCountMapper.selectById(user.getId());
             if (uploadWorkFileCount != null) {
-                if (uploadWorkFileCount.getCount() >= 100) { //限制每天只能上传100份作业文件
-                    String exceptionLog = "用户：" + user.getId() + "(" + user.getUsername() + ") 于" + commonService.getCurrentDateTime() + "达到上传作业文件上限次数";
-                    Log.error(exceptionLog);
-                    throw new ServiceException("已达到今日上传次数上限");
-                }
-
                 uploadWorkFileCount.setCount(uploadWorkFileCount.getCount() + 1);
                 int count = uploadWorkFileCountMapper.updateById(uploadWorkFileCount);
                 if (count <= 0) {
@@ -78,9 +84,8 @@ public class WorkFileService {
                     Log.error(exceptionLog);
                     throw new ServiceException("上传记录更新失败");
                 }
-
             } else {
-                UploadWorkFileCount initData = new UploadWorkFileCount(user.getId(), 0);
+                UploadWorkFileCount initData = new UploadWorkFileCount(user.getId(), 1);
                 int count = uploadWorkFileCountMapper.insert(initData);
                 if (count <= 0) {
                     String exceptionLog = "用户：" + user.getId() + "(" + user.getUsername() + ") 于"
@@ -89,14 +94,15 @@ public class WorkFileService {
                     Log.error(exceptionLog);
                     throw new ServiceException("上传记录初始化失败");
                 }
-
             }
-
             return new OperateResult(200, "作业创建成功");
-        } else return new OperateResult(500, "作业创建失败");
+        } else {
+            return new OperateResult(500, "作业创建失败");
+        }
     }
 
-    public OperateResult updateWorkFile(String token, WorkFile workFile) {
+
+    public OperateResult updateWorkFile(String token, WorkFile workFile) throws JsonProcessingException {
         User user = selectUserService.getUserByToken(token);
         if (user == null) {
             return new OperateResult(404, "用户未找到");
@@ -115,10 +121,12 @@ public class WorkFileService {
             existingWorkFile.setLayout(workFile.getLayout());
             existingWorkFile.setDescription(workFile.getDescription());
 
+            existingWorkFile.setDescriptionPictures(mowerBucketService.picturesUpload(existingWorkFile.getDescriptionPictures()));
+
             existingWorkFile.setStorageType(workFile.getStorageType());
             if (StorageType.PICTURE_KEY.getValue().equals(existingWorkFile.getStorageType())) {
                 //传来的是图片的字节流，载入的是返回的存储key
-                String key = mowerBucketService.uploadPng(workFile.getFileContent());
+                String key = mowerBucketService.uploadWebP(workFile.getFileContent());
                 existingWorkFile.setFileContent(key);
             } else {
                 existingWorkFile.setFileContent(workFile.getFileContent());
@@ -146,10 +154,10 @@ public class WorkFileService {
         WorkFile workFile = workFileMapper.selectById(wid);
         if (workFile != null && workFile.getAuthorId().equals(user.getId())) {
 
-            // 检查是否已png图片格式存储作业文件
+            // 检查是否已webp图片格式存储作业文件
             if (StorageType.PICTURE_KEY.getValue().equals(workFile.getStorageType())) {
                 // 如果是，删除其所拥有的唯一key，以及对象存储桶中的键值
-                mowerBucketService.deletePng(workFile.getFileContent());
+                mowerBucketService.deleteWebP(workFile.getFileContent());
             }
 
             if (workFileMapper.deleteById(wid) > 0) {

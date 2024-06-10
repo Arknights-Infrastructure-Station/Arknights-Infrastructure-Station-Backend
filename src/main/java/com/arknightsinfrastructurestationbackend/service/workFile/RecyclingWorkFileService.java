@@ -152,10 +152,10 @@ public class RecyclingWorkFileService {
             return new OperateResult(403, "没有权限删除该作业");
         }
 
-        // 检查是否已png图片格式存储作业文件
+        // 检查是否已webp图片格式存储作业文件
         if (StorageType.PICTURE_KEY.getValue().equals(recyclingWorkFile.getStorageType())) {
             // 如果是，删除其所拥有的唯一key，以及对象存储桶中的键值
-            mowerBucketService.deletePng(recyclingWorkFile.getFileContent());
+            mowerBucketService.deleteWebP(recyclingWorkFile.getFileContent());
         }
 
         // 执行删除操作

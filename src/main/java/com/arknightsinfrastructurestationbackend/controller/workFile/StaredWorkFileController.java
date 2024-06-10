@@ -50,13 +50,13 @@ public class StaredWorkFileController {
     /**
      * 收藏某个作业
      *
-     * @param wid 作业ID
+     * @param workFileSimpleSearch 仅包含作业ID的DTO
      * @return 收藏操作结果
      */
     @PostMapping("/starWorkFile")
-    public ResponseEntity<Object> starWorkFile(HttpServletRequest request, @RequestBody String wid) {
+    public ResponseEntity<Object> starWorkFile(HttpServletRequest request, @RequestBody WorkFileSimpleSearch workFileSimpleSearch) {
         String token = Token.getTokenByRequest(request);
-        OperateResult result = staredWorkFileService.insertStarRecord(token, Long.valueOf(wid));
+        OperateResult result = staredWorkFileService.insertStarRecord(token, Long.valueOf(workFileSimpleSearch.getWid()));
         List<StarRecord> starList = staredWorkFileService.getStarListForUser(token);
         return ResponseEntity.ok(new OperateAndStarListResult(result, FileConverter.B2FSR(starList)));
     }
@@ -64,13 +64,13 @@ public class StaredWorkFileController {
     /**
      * 取消收藏某个作业
      *
-     * @param wid 作业ID
+     * @param workFileSimpleSearch 仅包含作业ID的DTO
      * @return 取消收藏操作结果
      */
     @PostMapping("/unstarWorkFile")
-    public ResponseEntity<Object> unstarWorkFile(HttpServletRequest request, @RequestBody String wid) {
+    public ResponseEntity<Object> unstarWorkFile(HttpServletRequest request, @RequestBody WorkFileSimpleSearch workFileSimpleSearch) {
         String token = Token.getTokenByRequest(request);
-        OperateResult result = staredWorkFileService.deleteStarRecord(token, Long.valueOf(wid));
+        OperateResult result = staredWorkFileService.deleteStarRecord(token, Long.valueOf(workFileSimpleSearch.getWid()));
         List<StarRecord> starList = staredWorkFileService.getStarListForUser(token);
         return ResponseEntity.ok(new OperateAndStarListResult(result, FileConverter.B2FSR(starList)));
     }

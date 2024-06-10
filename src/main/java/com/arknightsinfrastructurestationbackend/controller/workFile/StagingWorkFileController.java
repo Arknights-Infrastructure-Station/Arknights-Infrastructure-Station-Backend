@@ -8,6 +8,7 @@ import com.arknightsinfrastructurestationbackend.dto.query.WorkFileSimpleSearch;
 import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_StagingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.StagingWorkFile;
 import com.arknightsinfrastructurestationbackend.service.workFile.StagingWorkFileService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -33,7 +34,7 @@ public class StagingWorkFileController {
         OperateResult result;
         try {
             result = stagingWorkFileService.insertStagingWorkFile(token, FileConverter.FB(workFile));
-        } catch (ServiceException e) {
+        } catch (ServiceException |JsonProcessingException e) {
             result = new OperateResult(500, e.getMessage());
         }
         return ResponseEntity.ok(new OperateAndStagingWorkFileListResult(result, null, null));
@@ -48,7 +49,12 @@ public class StagingWorkFileController {
     @PostMapping("/update")
     public ResponseEntity<Object> updateStagingWorkFile(HttpServletRequest request, @RequestBody F_StagingWorkFile workFile) {
         String token = Token.getTokenByRequest(request);
-        OperateResult result = stagingWorkFileService.updateStagingWorkFile(token, FileConverter.FB(workFile));
+        OperateResult result;
+        try {
+            result = stagingWorkFileService.updateStagingWorkFile(token, FileConverter.FB(workFile));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         return ResponseEntity.ok(new OperateAndStagingWorkFileListResult(result, null, null));
     }
 

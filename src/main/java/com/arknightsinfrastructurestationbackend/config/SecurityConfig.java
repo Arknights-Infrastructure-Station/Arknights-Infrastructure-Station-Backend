@@ -1,5 +1,6 @@
 package com.arknightsinfrastructurestationbackend.config;
 
+import com.arknightsinfrastructurestationbackend.config.filter.JwtRequestFilter;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +23,9 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
+    /**
+     * 权限拦截
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
@@ -29,7 +33,7 @@ public class SecurityConfig {
                 .authorizeRequests((authorize) -> authorize
                         .requestMatchers("/user/**","/starRecord/**",
                                 "/recyclingWorkFile/**","/stagingWorkFile/**",
-                                "/workFile/create","workFile/update","workFile/delete").hasRole("USER")
+                                "/workFile/create","workFile/update","workFile/screenPostedWorkFileList").hasRole("USER")
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 
