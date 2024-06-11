@@ -56,7 +56,7 @@ public class JsonWorkProcessor {
 
         // 步骤5：如果房间名称不匹配，返回未进行调换的原始JSON数据
         if (!isEqual) {
-            return new OperateResult(500, "基建布局不同，无法适配", originalJson.toString(0));
+            return new OperateResult(251, "基建布局不同，无法适配", originalJson.toString(0));
         } else {
             // 步骤6：如果房间名称匹配，将原始房间数据存储到Map中
             Map<String, JSONObject> storeRooms = new HashMap<>();

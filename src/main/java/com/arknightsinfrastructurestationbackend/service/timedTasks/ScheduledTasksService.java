@@ -1,11 +1,11 @@
 package com.arknightsinfrastructurestationbackend.service.timedTasks;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.arknightsinfrastructurestationbackend.entitiy.user.UploadWorkFileCount;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;
+import com.arknightsinfrastructurestationbackend.mapper.user.UploadStagingWorkFileCountMapper;
 import com.arknightsinfrastructurestationbackend.mapper.user.UploadWorkFileCountMapper;
 import com.arknightsinfrastructurestationbackend.mapper.workFile.RecyclingWorkFileMapper;
 import com.arknightsinfrastructurestationbackend.mapper.workFile.WorkFileMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import lombok.AllArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,7 @@ public class ScheduledTasksService {
     private final RecyclingWorkFileMapper recyclingWorkFileMapper;
     private final WorkFileMapper workFileMapper;
     private final UploadWorkFileCountMapper uploadWorkFileCountMapper;
+    private final UploadStagingWorkFileCountMapper uploadStagingWorkFileCountMapper;
 
     // 每天执行一次的定时任务
 
@@ -51,9 +52,8 @@ public class ScheduledTasksService {
      */
     @Scheduled(cron = "0 0 0 * * ?")
     public void resetUploadCount() {
-        LambdaQueryWrapper<UploadWorkFileCount> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.isNotNull(UploadWorkFileCount::getId); //条件始终为真，意味着删除所有数据
-        uploadWorkFileCountMapper.delete(queryWrapper);
+        uploadWorkFileCountMapper.truncateTable();
+        uploadStagingWorkFileCountMapper.truncateTable();
     }
 }
 

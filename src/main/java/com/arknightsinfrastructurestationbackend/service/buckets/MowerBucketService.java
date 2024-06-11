@@ -153,7 +153,7 @@ public class MowerBucketService {
      * @return 存储图片的key数组字符串
      */
     public String picturesUpload(String picturesArrayString) throws JsonProcessingException {
-        if (picturesArrayString == null)
+        if (picturesArrayString == null || "null".equals(picturesArrayString))
             return null;
         String[] pictures = objectMapper.readValue(picturesArrayString, String[].class);
         if (pictures.length > 5)
