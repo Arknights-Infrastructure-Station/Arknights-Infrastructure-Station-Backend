@@ -67,7 +67,12 @@ public class WorkFileController {
 //    @PostMapping("/delete")
     public ResponseEntity<Object> deleteWorkFile(HttpServletRequest request, @RequestBody WorkFileSimpleSearch workFileSimpleSearch) {
         String token = Token.getTokenByRequest(request);
-        OperateResult result = workFileService.deleteWorkFile(token, Long.valueOf(workFileSimpleSearch.getWid()));
+        OperateResult result = null;
+        try {
+            result = workFileService.deleteWorkFile(token, Long.valueOf(workFileSimpleSearch.getWid()));
+        } catch (JsonProcessingException e) {
+            result = new OperateResult(500, e.getMessage());
+        }
         return ResponseEntity.ok(new OperateAndWorkFileListResult(result, null, null));
     }
 

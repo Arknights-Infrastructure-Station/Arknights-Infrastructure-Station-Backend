@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obs.services.ObsClient;
 import com.obs.services.exception.ObsException;
+import com.obs.services.model.ObjectListing;
 import com.obs.services.model.ObsObject;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
@@ -16,7 +17,10 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.List;
+import java.util.Random;
 
 @Service
 @AllArgsConstructor
@@ -26,64 +30,196 @@ public class MowerBucketService {
     private final String endPoint = "https://obs.cn-north-4.myhuaweicloud.com";
     private final String bucketName = "mower";
     private final ObsClient obsClient = new ObsClient(ak, sk, endPoint);
-
-    private final WebPKeysService webpKeysService;
-
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final int MAX_ATTEMPTS = 50;
+    private final Random random = new Random(System.currentTimeMillis());
 
-
-    /**
-     * 上传WebP文件字节流
-     *
-     * @param dataUrl webp文件数据url字符串
-     * @return 生成的，用于存储的桶键
-     */
-    public String uploadWebP(String dataUrl) {
-        String key = null;
-        try {
-            // 提取Base64数据部分
-            String base64Data = dataUrl.split(",")[1];
-            // 解码Base64数据
-            byte[] pictureBytes = Base64.getDecoder().decode(base64Data);
-
-            key = webpKeysService.addKey();
-            obsClient.putObject(bucketName, key, new ByteArrayInputStream(pictureBytes));
-            return key;
-        } catch (ObsException e) {
-            Log.error("putObject failed");
-            // 请求失败,打印http状态码
-            Log.error("HTTP Code:" + e.getResponseCode());
-            // 请求失败,打印服务端错误码
-            Log.error("Error Code:" + e.getErrorCode());
-            // 请求失败,打印详细错误信息
-            Log.error("Error Message:" + e.getErrorMessage());
-            // 请求失败,打印请求id
-            Log.error("Request ID:" + e.getErrorRequestId());
-            Log.error("Host ID:" + e.getErrorHostId());
-            if (key != null) {
-                webpKeysService.deleteKey(key);
-            }
-        } catch (Exception e) {
-            Log.error("putObject failed" + e.getMessage());
+    private String generateRandomString(int length) {
+        String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(characters.charAt(random.nextInt(characters.length())));
         }
-        return null; //返回null代表对象存储失败
+        return sb.toString();
+    }
+
+    private List<String> getAllKeys() {
+        List<String> keys = new ArrayList<>();
+        try {
+            ObjectListing result = obsClient.listObjects(bucketName);
+            for (ObsObject obsObject : result.getObjects()) {
+                keys.add(obsObject.getObjectKey());
+            }
+        } catch (ObsException e) {
+            Log.error("Error listing objects: " + e.getErrorMessage());
+        }
+        return keys;
+    }
+
+    private String addKey() {
+        List<String> existingKeys = getAllKeys();
+        for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+            String key = generateRandomString(5);
+            if (!existingKeys.contains(key)) {
+                return key;
+            }
+        }
+        throw new ServiceException("在尝试生成唯一键 50 次后失败");
+    }
+
+    private boolean deleteKey(String key) {
+        try {
+            obsClient.deleteObject(bucketName, key);
+            return true;
+        } catch (ObsException e) {
+            Log.error("Error deleting object: " + e.getErrorMessage());
+            return false;
+        }
     }
 
     /**
-     * 下载WebP文件字节流并以String格式返回
-     * 原始方法，无分布式锁
+     * 上传单个WebP文件并返回生成的键
      *
-     * @param objectKey 要提取的桶对象的键
-     * @return 桶对象字符串
+     * @param dataUrl webp文件数据url字符串
+     * @return 生成的用于存储的桶键
      */
-    private String downloadWebP(String objectKey) {
+    @RedisLock(key = "'lock:WebPStorage:uploadSingleWebP:' + #dataUrl")
+    public String uploadSingleWebP(String dataUrl) {
+        String key = null;
+        try {
+            String base64Data = dataUrl.split(",")[1];
+            byte[] pictureBytes = Base64.getDecoder().decode(base64Data);
+
+            key = addKey();
+            obsClient.putObject(bucketName, key, new ByteArrayInputStream(pictureBytes));
+            return key;
+        } catch (ObsException e) {
+            Log.error("putObject failed: " + e.getErrorMessage());
+            if (key != null) {
+                deleteKey(key);
+            }
+            throw new ServiceException("上传WebP图片失败");
+        }
+    }
+
+    /**
+     * 上传多个WebP文件并返回生成的键数组
+     *
+     * @param picturesArrayString 图片数组字符串
+     * @return 存储图片的键数组字符串
+     * @throws JsonProcessingException JSON处理异常
+     */
+    @RedisLock(key = "'lock:WebPStorage:uploadMultipleWebP:' + #picturesArrayString")
+    public String uploadMultipleWebP(String picturesArrayString) throws JsonProcessingException {
+        String[] pictures = objectMapper.readValue(picturesArrayString, String[].class);
+        List<String> existingKeys = getAllKeys();
+        List<String> keys = new ArrayList<>();
+
+        if (pictures.length > 5) {
+            throw new ServiceException("图片数量超过限制，最多允许上传5张图片");
+        }
+
+        try {
+            for (String picture : pictures) { //仅提供循环次数作用
+                boolean keyGenerated = false;
+                for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+                    String key = generateRandomString(5);
+                    if (!existingKeys.contains(key) && !keys.contains(key)) {
+                        keys.add(key);
+                        keyGenerated = true;
+                        break;
+                    }
+                }
+                if (!keyGenerated) {
+                    throw new ServiceException("生成唯一键失败");
+                }
+            }
+
+            for (int i = 0; i < pictures.length; i++) {
+                String base64Data = pictures[i].split(",")[1];
+                byte[] pictureBytes = Base64.getDecoder().decode(base64Data);
+                obsClient.putObject(bucketName, keys.get(i), new ByteArrayInputStream(pictureBytes));
+            }
+            return objectMapper.writeValueAsString(keys);
+        } catch (ObsException e) {
+            Log.error("putObject failed: " + e.getErrorMessage());
+            for (String key : keys) {
+                deleteKey(key);
+            }
+            throw new ServiceException("上传一个或多个WebP图片失败");
+        }
+    }
+
+    /**
+     * 删除单个WebP文件
+     *
+     * @param key 要删除的文件键
+     */
+    @CacheEvict("WebPStorage")
+    @RedisLock(key = "'lock:WebPStorage:removeSingleWebP:' + #key")
+    public void removeSingleWebP(String key) {
+        if (!deleteKey(key)) {
+            throw new ServiceException("删除WebP图片失败，键：" + key);
+        }
+    }
+
+    //该方法不方便加@CacheEvict注解
+    /**
+     * 删除多个WebP文件
+     *
+     * @param keysArrayString 要删除的文件键数组字符串
+     * @throws JsonProcessingException JSON处理异常
+     */
+    @RedisLock(key = "'lock:WebPStorage:removeMultipleWebP:' + #keysArrayString")
+    public void removeMultipleWebP(String keysArrayString) throws JsonProcessingException {
+        String[] keys = objectMapper.readValue(keysArrayString, String[].class);
+        List<String> existingKeys = getAllKeys();
+
+        for (String key : keys) {
+            if (!existingKeys.contains(key)) {
+                throw new ServiceException("桶中未找到键：" + key);
+            }
+        }
+
+        List<String> failedKeys = new ArrayList<>();
+
+        for (String key : keys) {
+            boolean success = deleteKey(key);
+            if (!success) {
+                failedKeys.add(key);
+            }
+        }
+
+        if (!failedKeys.isEmpty()) {
+            for (String key : failedKeys) {
+                boolean success = false;
+                for (int attempt = 0; attempt < 3; attempt++) { //最多尝试3次再删除操作
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    success = deleteKey(key);
+                    if (success) {
+                        break;
+                    }
+                }
+                if (!success) {
+                    throw new ServiceException("删除多个WebP图片失败：" + key);
+                }
+            }
+        }
+    }
+
+    @Cacheable("WebPStorage")
+    @RedisLock(key = "'lock:WebPStorage:downloadWebP:' + #objectKey")
+    public String downloadWebP(String objectKey) {
         String content = null;
         try {
             ObsObject obsObject = obsClient.getObject(bucketName, objectKey);
             InputStream input = obsObject.getObjectContent();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            int sizeInBytes = 2 * 1024 * 1024; // 2 MB
-            byte[] b = new byte[sizeInBytes];
+            byte[] b = new byte[2 * 1024 * 1024];
             int len;
             while ((len = input.read(b)) != -1) {
                 bos.write(b, 0, len);
@@ -92,77 +228,10 @@ public class MowerBucketService {
             bos.close();
             input.close();
         } catch (ObsException e) {
-            Log.error("getObjectContent failed");
-            Log.error("HTTP Code:" + e.getResponseCode());
-            Log.error("Error Code:" + e.getErrorCode());
-            Log.error("Error Message:" + e.getErrorMessage());
-            Log.error("Request ID:" + e.getErrorRequestId());
-            Log.error("Host ID:" + e.getErrorHostId());
+            Log.error("getObjectContent failed: " + e.getErrorMessage());
         } catch (Exception e) {
-            Log.error("getObjectContent failed" + e.getMessage());
+            Log.error("getObjectContent failed: " + e.getMessage());
         }
         return content;
-    }
-
-    /**
-     * 下载WebP文件字节流并以String格式返回
-     * 包装方法，配备分布式锁
-     *
-     * @param objectKey 要提取的桶对象的键
-     * @return 桶对象字符串
-     */
-    @Cacheable("WebPStorage")
-    @RedisLock(key = "'lock:WebPStorage:syncDownloadWebP:' + #objectKey")
-    public String syncDownloadWebP(String objectKey) {
-        return downloadWebP(objectKey);
-    }
-
-    /*
-    该方法其实不需要配备@CacheEvict注解，因为该方法是服务层顺带调用的，作业在删除后前端就看不到了，
-    也就不会再触发该作业的缓存键，不会出现异常显示问题，直接等待该缓存键过期就行
-    这里还是标注了@CacheEvict是因为能及时释放缓存占用的内存空间
-     */
-
-    /**
-     * 删除文件
-     *
-     * @param objectKey 要删除的桶对象的键
-     */
-    @CacheEvict("WebPStorage")
-    public void deleteWebP(String objectKey) {
-        try {
-            webpKeysService.deleteKey(objectKey);
-            obsClient.deleteObject(bucketName, objectKey);
-            Log.error("deleteObject successfully");
-        } catch (ObsException e) {
-            Log.error("deleteObject failed");
-            Log.error("HTTP Code:" + e.getResponseCode());
-            Log.error("Error Code:" + e.getErrorCode());
-            Log.error("Error Message:" + e.getErrorMessage());
-            Log.error("Request ID:" + e.getErrorRequestId());
-            Log.error("Host ID:" + e.getErrorHostId());
-        } catch (Exception e) {
-            Log.error("deleteObject failed");
-        }
-    }
-
-    /**
-     * 上传图片描述字段所包含的图片，并返回存储的key数组字符串
-     *
-     * @param picturesArrayString 图片数组字符串
-     * @return 存储图片的key数组字符串
-     */
-    public String picturesUpload(String picturesArrayString) throws JsonProcessingException {
-        if (picturesArrayString == null || "null".equals(picturesArrayString))
-            return null;
-        String[] pictures = objectMapper.readValue(picturesArrayString, String[].class);
-        if (pictures.length > 5)
-            throw new ServiceException("图片描述数组长度超限"); //最多允许上传5张图片
-        for (int i = 0; i < pictures.length; i++) {
-            //将每一个图片的Base64字符串替换为图片对应的key
-            String key = uploadWebP(pictures[i]);
-            pictures[i] = key;
-        }
-        return objectMapper.writeValueAsString(pictures);
     }
 }

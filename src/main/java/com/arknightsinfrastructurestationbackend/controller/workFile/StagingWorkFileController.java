@@ -67,7 +67,12 @@ public class StagingWorkFileController {
     @PostMapping("/delete")
     public ResponseEntity<Object> deleteStagingWorkFile(HttpServletRequest request, @RequestBody WorkFileSimpleSearch workFileSimpleSearch) {
         String token = Token.getTokenByRequest(request);
-        OperateResult result = stagingWorkFileService.deleteStagingWorkFile(token, Long.valueOf(workFileSimpleSearch.getWid()));
+        OperateResult result = null;
+        try {
+            result = stagingWorkFileService.deleteStagingWorkFile(token, Long.valueOf(workFileSimpleSearch.getWid()));
+        } catch (JsonProcessingException e) {
+            result = new OperateResult(500, e.getMessage());
+        }
         List<StagingWorkFile> stagingWorkFileList = stagingWorkFileService.screenStagingWorkFileList(token, workFileSimpleSearch);
         return ResponseEntity.ok(new OperateAndStagingWorkFileListResult(result, FileConverter.B2FSWL(stagingWorkFileList)
                 , stagingWorkFileService.getStagingWorkFileListCount(token, workFileSimpleSearch)));

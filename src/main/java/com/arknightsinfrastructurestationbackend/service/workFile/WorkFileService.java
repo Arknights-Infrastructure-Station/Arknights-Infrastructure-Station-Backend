@@ -52,9 +52,7 @@ public class WorkFileService {
         UploadWorkFileCount uploadWorkFileCount = uploadWorkFileCountMapper.selectById(user.getId());
         if (uploadWorkFileCount != null) {
             if (uploadWorkFileCount.getCount() >= 50) { // 限制每天只能上传50份作业文件
-                String exceptionLog = "用户：" + user.getId() + "(" + user.getUsername() + ") 于" + commonService.getCurrentDateTime() + "达到上传作业文件上限次数";
-                Log.error(exceptionLog);
-                throw new ServiceException("已达到今日上传次数上限");
+                return new OperateResult(403, "已达到今日上传次数上限");
             }
         }
 
@@ -66,12 +64,12 @@ public class WorkFileService {
 
         if (StorageType.PICTURE_KEY.getValue().equals(workFile.getStorageType())) {
             // 如果存储方式为图片方式，那么将图片字节流存入对象存储桶，将存储的key存入FileContent中
-            String key = mowerBucketService.uploadWebP(workFile.getFileContent());
+            String key = mowerBucketService.uploadSingleWebP(workFile.getFileContent());
             workFile.setFileContent(key); // 如果存储失败，那么返回的key会是null，而fileContent字段被设置为非null，会制止异常数据的插入
         }
 
         // 替换完成后，重设字段
-        workFile.setDescriptionPictures(mowerBucketService.picturesUpload(workFile.getDescriptionPictures()));
+        workFile.setDescriptionPictures(mowerBucketService.uploadMultipleWebP(workFile.getDescriptionPictures()));
 
         if (workFileMapper.insert(workFile) > 0) {
             if (uploadWorkFileCount != null) {
@@ -121,12 +119,12 @@ public class WorkFileService {
             existingWorkFile.setLayout(workFile.getLayout());
             existingWorkFile.setDescription(workFile.getDescription());
 
-            existingWorkFile.setDescriptionPictures(mowerBucketService.picturesUpload(existingWorkFile.getDescriptionPictures()));
+            existingWorkFile.setDescriptionPictures(mowerBucketService.uploadMultipleWebP(existingWorkFile.getDescriptionPictures()));
 
             existingWorkFile.setStorageType(workFile.getStorageType());
             if (StorageType.PICTURE_KEY.getValue().equals(existingWorkFile.getStorageType())) {
                 //传来的是图片的字节流，载入的是返回的存储key
-                String key = mowerBucketService.uploadWebP(workFile.getFileContent());
+                String key = mowerBucketService.uploadSingleWebP(workFile.getFileContent());
                 existingWorkFile.setFileContent(key);
             } else {
                 existingWorkFile.setFileContent(workFile.getFileContent());
@@ -145,7 +143,7 @@ public class WorkFileService {
         }
     }
 
-    public OperateResult deleteWorkFile(String token, Long wid) {
+    public OperateResult deleteWorkFile(String token, Long wid) throws JsonProcessingException {
         User user = selectUserService.getUserByToken(token);
         if (user == null) {
             return new OperateResult(404, "用户未找到");
@@ -157,7 +155,8 @@ public class WorkFileService {
             // 检查是否已webp图片格式存储作业文件
             if (StorageType.PICTURE_KEY.getValue().equals(workFile.getStorageType())) {
                 // 如果是，删除其所拥有的唯一key，以及对象存储桶中的键值
-                mowerBucketService.deleteWebP(workFile.getFileContent());
+                mowerBucketService.removeSingleWebP(workFile.getFileContent());
+                mowerBucketService.removeMultipleWebP(workFile.getDescriptionPictures());
             }
 
             if (workFileMapper.deleteById(wid) > 0) {

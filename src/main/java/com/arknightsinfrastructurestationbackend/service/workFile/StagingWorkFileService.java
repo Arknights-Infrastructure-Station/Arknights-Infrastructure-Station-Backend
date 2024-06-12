@@ -14,6 +14,7 @@ import com.arknightsinfrastructurestationbackend.service.buckets.MowerBucketServ
 import com.arknightsinfrastructurestationbackend.service.user.SelectUserService;
 import com.arknightsinfrastructurestationbackend.service.utils.CommonService;
 import com.arknightsinfrastructurestationbackend.service.workFile.adapter.AdapterService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AllArgsConstructor;
@@ -45,10 +46,14 @@ public class StagingWorkFileService {
         UploadStagingWorkFileCount uploadStagingWorkFileCount = uploadStagingWorkFileCountMapper.selectById(user.getId());
         if (uploadStagingWorkFileCount != null) {
             if (uploadStagingWorkFileCount.getCount() >= 50) { // 限制每天只能上传50份暂存作业文件
-                String exceptionLog = "用户：" + user.getId() + "(" + user.getUsername() + ") 于" + commonService.getCurrentDateTime() + "达到上传暂存作业文件上限次数";
-                Log.error(exceptionLog);
-                throw new ServiceException("已达到今日上传次数上限");
+                return new OperateResult(403, "已达到今日上传次数上限");
             }
+        }
+
+        // 检查该用户是否已达到存储上限
+        Long userWorkFileCount = stagingWorkFileMapper.selectCount(new LambdaQueryWrapper<StagingWorkFile>().eq(StagingWorkFile::getAuthorId,user.getId()));
+        if (userWorkFileCount >= 200) { // 限制用户最多存储200份暂存作业
+            return new OperateResult(403, "已达到暂存作业存储上限");
         }
 
         // 暂存作业id自动生成
@@ -57,12 +62,12 @@ public class StagingWorkFileService {
         stagingWorkFile.setStagingDate(commonService.getCurrentDateTime());
 
         if (StorageType.PICTURE_KEY.getValue().equals(stagingWorkFile.getStorageType())) {
-            String key = mowerBucketService.uploadWebP(stagingWorkFile.getFileContent());
+            String key = mowerBucketService.uploadSingleWebP(stagingWorkFile.getFileContent());
             stagingWorkFile.setFileContent(key);
         }
 
         // 替换图片存储数组字段
-        stagingWorkFile.setDescriptionPictures(mowerBucketService.picturesUpload(stagingWorkFile.getDescriptionPictures()));
+        stagingWorkFile.setDescriptionPictures(mowerBucketService.uploadMultipleWebP(stagingWorkFile.getDescriptionPictures()));
 
         if (stagingWorkFileMapper.insert(stagingWorkFile) > 0) {
             if (uploadStagingWorkFileCount != null) {
@@ -111,11 +116,11 @@ public class StagingWorkFileService {
             existingStagingWorkFile.setLayout(stagingWorkFile.getLayout());
             existingStagingWorkFile.setDescription(stagingWorkFile.getDescription());
 
-            existingStagingWorkFile.setDescriptionPictures(mowerBucketService.picturesUpload(existingStagingWorkFile.getDescriptionPictures()));
+            existingStagingWorkFile.setDescriptionPictures(mowerBucketService.uploadMultipleWebP(existingStagingWorkFile.getDescriptionPictures()));
 
             existingStagingWorkFile.setStorageType(stagingWorkFile.getStorageType());
             if (StorageType.PICTURE_KEY.getValue().equals(existingStagingWorkFile.getStorageType())) {
-                String key = mowerBucketService.uploadWebP(stagingWorkFile.getFileContent());
+                String key = mowerBucketService.uploadSingleWebP(stagingWorkFile.getFileContent());
                 existingStagingWorkFile.setFileContent(key);
             } else {
                 existingStagingWorkFile.setFileContent(stagingWorkFile.getFileContent());
@@ -132,7 +137,7 @@ public class StagingWorkFileService {
         }
     }
 
-    public OperateResult deleteStagingWorkFile(String token, Long wid) {
+    public OperateResult deleteStagingWorkFile(String token, Long wid) throws JsonProcessingException {
         User user = selectUserService.getUserByToken(token);
         if (user == null) {
             return new OperateResult(404, "用户未找到");
@@ -144,7 +149,8 @@ public class StagingWorkFileService {
             // 检查是否已webp图片格式存储作业文件
             if (StorageType.PICTURE_KEY.getValue().equals(stagingWorkFile.getStorageType())) {
                 // 如果是，删除其所拥有的唯一key，以及对象存储桶中的键值
-                mowerBucketService.deleteWebP(stagingWorkFile.getFileContent());
+                mowerBucketService.removeSingleWebP(stagingWorkFile.getFileContent());
+                mowerBucketService.removeMultipleWebP(stagingWorkFile.getDescriptionPictures());
             }
 
             if (stagingWorkFileMapper.deleteById(wid) > 0) {

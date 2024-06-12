@@ -8,6 +8,7 @@ import com.arknightsinfrastructurestationbackend.entitiy.user.DownloadRecord;
 import com.arknightsinfrastructurestationbackend.entitiy.user.StarRecord;
 import com.arknightsinfrastructurestationbackend.entitiy.user.User;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;
+import com.arknightsinfrastructurestationbackend.entitiy.workFile.StagingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
 import com.arknightsinfrastructurestationbackend.global.type.StorageType;
 import com.arknightsinfrastructurestationbackend.mapper.user.DownloadRecordMapper;
@@ -20,6 +21,7 @@ import com.arknightsinfrastructurestationbackend.service.utils.CommonService;
 import com.arknightsinfrastructurestationbackend.service.workFile.adapter.AdapterService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -66,6 +68,12 @@ public class RecyclingWorkFileService {
         WorkFile workFile = workFileMapper.selectById(workFileId);
         if (workFile == null) {
             return new OperateResult(404, "作业未找到");
+        }
+
+        // 检查该用户是否已达到存储上限
+        Long userWorkFileCount = recyclingWorkFileMapper.selectCount(new LambdaQueryWrapper<RecyclingWorkFile>().eq(RecyclingWorkFile::getAuthorId,user.getId()));
+        if (userWorkFileCount >= 200) { // 限制用户最多存储200份待回收作业
+            return new OperateResult(403, "已达到待回收作业存储上限");
         }
 
         // 检查用户是否发布过这个作业
@@ -134,7 +142,7 @@ public class RecyclingWorkFileService {
         }
     }
 
-    public OperateResult manuallyDeleteRecyclingWorkFile(String token, Long recyclingWorkFileId) {
+    public OperateResult manuallyDeleteRecyclingWorkFile(String token, Long recyclingWorkFileId) throws JsonProcessingException {
         // 通过token获取用户信息
         User user = selectUserService.getUserByToken(token);
         if (user == null) {
@@ -155,7 +163,8 @@ public class RecyclingWorkFileService {
         // 检查是否已webp图片格式存储作业文件
         if (StorageType.PICTURE_KEY.getValue().equals(recyclingWorkFile.getStorageType())) {
             // 如果是，删除其所拥有的唯一key，以及对象存储桶中的键值
-            mowerBucketService.deleteWebP(recyclingWorkFile.getFileContent());
+            mowerBucketService.removeSingleWebP(recyclingWorkFile.getFileContent());
+            mowerBucketService.removeMultipleWebP(recyclingWorkFile.getDescriptionPictures());
         }
 
         // 执行删除操作

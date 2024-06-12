@@ -110,8 +110,7 @@ public class UserController {
         try {
             result = userService.updateUserInfrastructure(token, infrastructureInfoList);
         } catch (IOException e) {
-            result = new OperateResult(400, "自定义基建排布配置字符串异常");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(result);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new OperateResult(400, "自定义基建排布配置字符串异常"));
         }
         UserInfo userInfo = userService.getUserInfo(token, true);
         return ResponseEntity.ok(new OperateResultAndUserInfo(result, userInfo));

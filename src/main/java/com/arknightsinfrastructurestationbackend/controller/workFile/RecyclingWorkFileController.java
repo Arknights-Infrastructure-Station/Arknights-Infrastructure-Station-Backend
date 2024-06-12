@@ -11,6 +11,7 @@ import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkF
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
 import com.arknightsinfrastructurestationbackend.service.workFile.RecyclingWorkFileService;
 import com.arknightsinfrastructurestationbackend.service.workFile.WorkFileService;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -77,7 +78,12 @@ public class RecyclingWorkFileController {
     @PostMapping("/deleteRecyclingWorkFile")
     public ResponseEntity<Object> manuallyDeleteRecyclingWorkFile(HttpServletRequest request, @RequestBody WorkFileSimpleSearch workFileSimpleSearch) {
         String token = Token.getTokenByRequest(request);
-        OperateResult result = recyclingWorkFileService.manuallyDeleteRecyclingWorkFile(token, Long.valueOf(workFileSimpleSearch.getWid()));
+        OperateResult result = null;
+        try {
+            result = recyclingWorkFileService.manuallyDeleteRecyclingWorkFile(token, Long.valueOf(workFileSimpleSearch.getWid()));
+        } catch (JsonProcessingException e) {
+            result = new OperateResult(500, e.getMessage());
+        }
         List<RecyclingWorkFile> recyclingWorkFiles = recyclingWorkFileService.screenRecyclingWorkFileList(token, workFileSimpleSearch);
         return ResponseEntity.ok(new OperateResultAndRecyclingWorkFileResult
                 (result, FileConverter.B2FRWL(recyclingWorkFiles), recyclingWorkFileService.getRecyclingWorkFileListCount(token, workFileSimpleSearch)));

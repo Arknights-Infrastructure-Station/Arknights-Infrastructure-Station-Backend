@@ -24,6 +24,6 @@ public class MowerBucketController {
      */
     @GetMapping("/webp/{key}")
     public String getWebPByKey(@PathVariable String key) {
-        return mowerBucketService.syncDownloadWebP(key);
+        return mowerBucketService.downloadWebP(key);
     }
 }
