@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/starRecord")
+@RequestMapping("/api/starRecord")
 @AllArgsConstructor
 public class StaredWorkFileController {
     private final StaredWorkFileService staredWorkFileService;

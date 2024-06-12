@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/download")
+@RequestMapping("/api/download")
 @AllArgsConstructor
 @ExcludeFromTokenRefresh
 public class DownloadRecordController {

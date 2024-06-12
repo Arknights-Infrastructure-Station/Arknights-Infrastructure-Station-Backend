@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/workFile")
+@RequestMapping("/api/workFile")
 @AllArgsConstructor
 public class WorkFileController {
 

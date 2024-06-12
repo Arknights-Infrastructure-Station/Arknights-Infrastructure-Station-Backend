@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/score")
+@RequestMapping("/api/score")
 @AllArgsConstructor
 public class UserRateController {
     private final UserRateService userRateService;

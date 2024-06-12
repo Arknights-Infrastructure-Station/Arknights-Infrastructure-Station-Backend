@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/recyclingWorkFile")
+@RequestMapping("/api/recyclingWorkFile")
 @AllArgsConstructor
 public class RecyclingWorkFileController {
     private final RecyclingWorkFileService recyclingWorkFileService;

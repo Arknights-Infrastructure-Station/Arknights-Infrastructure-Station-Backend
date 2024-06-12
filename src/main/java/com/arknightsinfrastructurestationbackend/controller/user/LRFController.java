@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 
 @RestController
-@RequestMapping("/lrf")
+@RequestMapping("/api/lrf")
 @AllArgsConstructor
 @ExcludeFromTokenRefresh
 public class LRFController {
