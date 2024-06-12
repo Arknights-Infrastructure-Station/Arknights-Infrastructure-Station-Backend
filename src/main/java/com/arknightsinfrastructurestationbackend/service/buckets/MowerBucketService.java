@@ -9,6 +9,7 @@ import com.obs.services.ObsClient;
 import com.obs.services.exception.ObsException;
 import com.obs.services.model.*;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
@@ -25,6 +26,7 @@ import java.util.Random;
 
 @Service
 @AllArgsConstructor
+@Data
 @Slf4j
 public class MowerBucketService {
     private final String ak = System.getenv("HUAWEICLOUD_OBS_ACCESS_KEY_ID");
