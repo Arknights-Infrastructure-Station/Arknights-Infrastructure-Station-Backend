@@ -10,6 +10,7 @@ import com.obs.services.exception.ObsException;
 import com.obs.services.model.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -29,7 +30,8 @@ public class MowerBucketService {
     private final String ak = System.getenv("HUAWEICLOUD_OBS_ACCESS_KEY_ID");
     private final String sk = System.getenv("HUAWEICLOUD_OBS_SECRET_ACCESS_KEY_ID");
     private final String endPoint = "https://obs.cn-north-4.myhuaweicloud.com";
-    private final String bucketName = "mower";
+    @Value("${bucketNames.name1}")
+    private final String bucketName;
     private final ObsClient obsClient = new ObsClient(ak, sk, endPoint);
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final int MAX_ATTEMPTS = 50;
@@ -54,7 +56,7 @@ public class MowerBucketService {
                 keys.add(obsObject.getObjectKey());
             }
         } catch (ObsException e) {
-            Log.error("Error listing objects: " + e.getErrorMessage());
+            log.error("Error listing objects: {}", e.getErrorMessage());
         }
         return keys;
     }
