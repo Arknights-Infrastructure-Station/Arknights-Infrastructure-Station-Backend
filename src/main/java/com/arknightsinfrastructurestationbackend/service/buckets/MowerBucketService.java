@@ -2,14 +2,14 @@ package com.arknightsinfrastructurestationbackend.service.buckets;
 
 import com.arknightsinfrastructurestationbackend.common.aspect.redisLock.RedisLock;
 import com.arknightsinfrastructurestationbackend.common.exception.ServiceException;
-import com.arknightsinfrastructurestationbackend.common.tools.Log;
+import com.arknightsinfrastructurestationbackend.service.utils.CommonService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obs.services.ObsClient;
 import com.obs.services.exception.ObsException;
-import com.obs.services.model.ObjectListing;
-import com.obs.services.model.ObsObject;
+import com.obs.services.model.*;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -24,6 +24,7 @@ import java.util.Random;
 
 @Service
 @AllArgsConstructor
+@Slf4j
 public class MowerBucketService {
     private final String ak = System.getenv("HUAWEICLOUD_OBS_ACCESS_KEY_ID");
     private final String sk = System.getenv("HUAWEICLOUD_OBS_SECRET_ACCESS_KEY_ID");
@@ -34,6 +35,8 @@ public class MowerBucketService {
     private final int MAX_ATTEMPTS = 50;
     private final Random random = new Random(System.currentTimeMillis());
 
+    private final CommonService commonService;
+
     private String generateRandomString(int length) {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         StringBuilder sb = new StringBuilder(length);
@@ -43,24 +46,24 @@ public class MowerBucketService {
         return sb.toString();
     }
 
-    private List<String> getAllKeys() {
-        List<String> keys = new ArrayList<>();
+    private ByteArrayInputStream getStream(String base64String) {
         try {
-            ObjectListing result = obsClient.listObjects(bucketName);
-            for (ObsObject obsObject : result.getObjects()) {
-                keys.add(obsObject.getObjectKey());
-            }
-        } catch (ObsException e) {
-            Log.error("Error listing objects: " + e.getErrorMessage());
+            String base64Data = base64String.split(",")[1];
+            byte[] pictureBytes = Base64.getDecoder().decode(base64Data);
+            return new ByteArrayInputStream(pictureBytes);
+        } catch (ArrayIndexOutOfBoundsException | IllegalArgumentException e) {
+            throw new ServiceException("Invalid base64 format");
         }
-        return keys;
+    }
+
+    private boolean stateIsValid(HeaderResponse result) {
+        return result.getStatusCode() >= 200 && result.getStatusCode() < 400;
     }
 
     private String addKey() {
-        List<String> existingKeys = getAllKeys();
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             String key = generateRandomString(5);
-            if (!existingKeys.contains(key)) {
+            if (!obsClient.doesObjectExist(bucketName, key)) {
                 return key;
             }
         }
@@ -69,10 +72,32 @@ public class MowerBucketService {
 
     private boolean deleteKey(String key) {
         try {
-            obsClient.deleteObject(bucketName, key);
-            return true;
+            if (obsClient.doesObjectExist(bucketName, key)) {
+                boolean success = true;
+                DeleteObjectResult deleteObjectResult = obsClient.deleteObject(bucketName, key);
+                if (!stateIsValid(deleteObjectResult)) { //最多尝试3次删除
+                    int maxAttempts = 3;
+                    for (int i = 0; i < maxAttempts; i++) {
+                        try {
+                            DeleteObjectResult result = obsClient.deleteObject(bucketName, key);
+                            if (stateIsValid(result))
+                                break;
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            log.error("Thread interrupted: {}", e.getMessage());
+                            Thread.currentThread().interrupt();
+                        }
+                        if (i == maxAttempts - 1)
+                            success = false;
+                    }
+                }
+                return success;
+            } else {
+                log.warn("Key not found: {}", key);
+                return false;
+            }
         } catch (ObsException e) {
-            Log.error("Error deleting object: " + e.getErrorMessage());
+            log.error("Error deleting object: {}", e.getErrorMessage());
             return false;
         }
     }
@@ -85,21 +110,11 @@ public class MowerBucketService {
      */
     @RedisLock(key = "'lock:WebPStorage:uploadSingleWebP:' + #dataUrl")
     public String uploadSingleWebP(String dataUrl) {
-        String key = null;
-        try {
-            String base64Data = dataUrl.split(",")[1];
-            byte[] pictureBytes = Base64.getDecoder().decode(base64Data);
-
-            key = addKey();
-            obsClient.putObject(bucketName, key, new ByteArrayInputStream(pictureBytes));
+        String key = addKey();
+        PutObjectResult putObjectResult = obsClient.putObject(bucketName, key, getStream(dataUrl));
+        if (stateIsValid(putObjectResult))
             return key;
-        } catch (ObsException e) {
-            Log.error("putObject failed: " + e.getErrorMessage());
-            if (key != null) {
-                deleteKey(key);
-            }
-            throw new ServiceException("上传WebP图片失败");
-        }
+        else throw new ServiceException("上传WebP图片失败");
     }
 
     /**
@@ -111,43 +126,21 @@ public class MowerBucketService {
      */
     @RedisLock(key = "'lock:WebPStorage:uploadMultipleWebP:' + #picturesArrayString")
     public String uploadMultipleWebP(String picturesArrayString) throws JsonProcessingException {
-        String[] pictures = objectMapper.readValue(picturesArrayString, String[].class);
-        List<String> existingKeys = getAllKeys();
-        List<String> keys = new ArrayList<>();
-
+        String[] pictures = commonService.convertStringArray(picturesArrayString);
         if (pictures.length > 5) {
             throw new ServiceException("图片数量超过限制，最多允许上传5张图片");
         }
-
-        try {
-            for (String picture : pictures) { //仅提供循环次数作用
-                boolean keyGenerated = false;
-                for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
-                    String key = generateRandomString(5);
-                    if (!existingKeys.contains(key) && !keys.contains(key)) {
-                        keys.add(key);
-                        keyGenerated = true;
-                        break;
-                    }
-                }
-                if (!keyGenerated) {
-                    throw new ServiceException("生成唯一键失败");
-                }
+        List<String> keys = new ArrayList<>();
+        for (String picture : pictures) {
+            String key = addKey();
+            PutObjectResult putObjectResult = obsClient.putObject(bucketName, key, getStream(picture));
+            if (stateIsValid(putObjectResult)) {
+                keys.add(key);
+            } else {
+                throw new ServiceException("上传WebP图片失败，键：" + key);
             }
-
-            for (int i = 0; i < pictures.length; i++) {
-                String base64Data = pictures[i].split(",")[1];
-                byte[] pictureBytes = Base64.getDecoder().decode(base64Data);
-                obsClient.putObject(bucketName, keys.get(i), new ByteArrayInputStream(pictureBytes));
-            }
-            return objectMapper.writeValueAsString(keys);
-        } catch (ObsException e) {
-            Log.error("putObject failed: " + e.getErrorMessage());
-            for (String key : keys) {
-                deleteKey(key);
-            }
-            throw new ServiceException("上传一个或多个WebP图片失败");
         }
+        return objectMapper.writeValueAsString(keys);
     }
 
     /**
@@ -158,6 +151,9 @@ public class MowerBucketService {
     @CacheEvict("WebPStorage")
     @RedisLock(key = "'lock:WebPStorage:removeSingleWebP:' + #key")
     public void removeSingleWebP(String key) {
+        if (!obsClient.doesObjectExist(bucketName, key)) {
+            throw new ServiceException("桶中未找到键：" + key);
+        }
         if (!deleteKey(key)) {
             throw new ServiceException("删除WebP图片失败，键：" + key);
         }
@@ -172,42 +168,29 @@ public class MowerBucketService {
      */
     @RedisLock(key = "'lock:WebPStorage:removeMultipleWebP:' + #keysArrayString")
     public void removeMultipleWebP(String keysArrayString) throws JsonProcessingException {
-        String[] keys = objectMapper.readValue(keysArrayString, String[].class);
-        List<String> existingKeys = getAllKeys();
-
+        String[] keys = commonService.convertStringArray(keysArrayString);
         for (String key : keys) {
-            if (!existingKeys.contains(key)) {
+            if (!obsClient.doesObjectExist(bucketName, key)) {
                 throw new ServiceException("桶中未找到键：" + key);
             }
         }
-
-        List<String> failedKeys = new ArrayList<>();
-
         for (String key : keys) {
-            boolean success = deleteKey(key);
-            if (!success) {
-                failedKeys.add(key);
+            if (!deleteKey(key)) {
+                throw new ServiceException("删除多个WebP图片失败，错误的键：" + key);
             }
         }
+    }
 
-        if (!failedKeys.isEmpty()) {
-            for (String key : failedKeys) {
-                boolean success = false;
-                for (int attempt = 0; attempt < 3; attempt++) { //最多尝试3次再删除操作
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    success = deleteKey(key);
-                    if (success) {
-                        break;
-                    }
-                }
-                if (!success) {
-                    throw new ServiceException("删除多个WebP图片失败：" + key);
-                }
-            }
+    /**
+     * 批量删除冗余的key
+     */
+    public void deleteRedundantKeys(List<String> existedKeys) {
+        DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucketName);
+        for (String existedKey : existedKeys) {
+            deleteObjectsRequest.addKeyAndVersion(existedKey);
+        }
+        if (deleteObjectsRequest.getKeyAndVersions().length > 0) {
+            obsClient.deleteObjects(deleteObjectsRequest);
         }
     }
 
@@ -227,10 +210,8 @@ public class MowerBucketService {
             content = "data:image/webp;base64," + Base64.getEncoder().encodeToString(bos.toByteArray());
             bos.close();
             input.close();
-        } catch (ObsException e) {
-            Log.error("getObjectContent failed: " + e.getErrorMessage());
         } catch (Exception e) {
-            Log.error("getObjectContent failed: " + e.getMessage());
+            log.error("getObjectContent failed: {}", e.getMessage());
         }
         return content;
     }

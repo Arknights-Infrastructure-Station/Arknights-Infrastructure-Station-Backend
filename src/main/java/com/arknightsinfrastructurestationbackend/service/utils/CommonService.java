@@ -8,6 +8,8 @@ import com.arknightsinfrastructurestationbackend.mapper.workFile.RecyclingWorkFi
 import com.arknightsinfrastructurestationbackend.mapper.workFile.StagingWorkFileMapper;
 import com.arknightsinfrastructurestationbackend.mapper.workFile.WorkFileMapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -23,6 +25,7 @@ public class CommonService {
     private final WorkFileMapper workFileMapper;
     private final StagingWorkFileMapper stagingWorkFileMapper;
     private final RecyclingWorkFileMapper recyclingWorkFileMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * 用户名称同步
@@ -79,7 +82,7 @@ public class CommonService {
     /**
      * Rounds a float to the specified number of decimal places.
      *
-     * @param value the float value to be rounded
+     * @param value  the float value to be rounded
      * @param places the number of decimal places to round to
      * @return the rounded float value
      */
@@ -89,5 +92,18 @@ public class CommonService {
         BigDecimal bd = new BigDecimal(Float.toString(value));
         bd = bd.setScale(places, RoundingMode.HALF_UP);
         return bd.floatValue();
+    }
+
+    /**
+     * 将数组形式的字符串转换为字符串数组
+     * @param stringArray 字符串形式的数组
+     * @return 字符串数组
+     * @throws JsonProcessingException 解析异常
+     */
+    public String[] convertStringArray(String stringArray) throws JsonProcessingException {
+        if (stringArray.isBlank() || !"null".equals(stringArray)) {
+            return null;
+        }
+        return objectMapper.readValue(stringArray, String[].class);
     }
 }
