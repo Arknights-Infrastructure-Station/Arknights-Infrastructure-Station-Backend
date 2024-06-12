@@ -46,6 +46,19 @@ public class MowerBucketService {
         return sb.toString();
     }
 
+    private List<String> getAllKeys() {
+        List<String> keys = new ArrayList<>();
+        try {
+            ObjectListing result = obsClient.listObjects(bucketName);
+            for (ObsObject obsObject : result.getObjects()) {
+                keys.add(obsObject.getObjectKey());
+            }
+        } catch (ObsException e) {
+            Log.error("Error listing objects: " + e.getErrorMessage());
+        }
+        return keys;
+    }
+
     private ByteArrayInputStream getStream(String base64String) {
         try {
             String base64Data = base64String.split(",")[1];
@@ -183,11 +196,14 @@ public class MowerBucketService {
 
     /**
      * 批量删除冗余的key
+     * @param existedKeys 数据库中的所有key
      */
     public void deleteRedundantKeys(List<String> existedKeys) {
+        List<String> keys = getAllKeys(); //获取线上OBS的所有Key
+        keys.removeAll(existedKeys); //从OBS的keys中减去数据库中包含的所有有效keys，得到冗余keys
         DeleteObjectsRequest deleteObjectsRequest = new DeleteObjectsRequest(bucketName);
-        for (String existedKey : existedKeys) {
-            deleteObjectsRequest.addKeyAndVersion(existedKey);
+        for (String redundantKey : keys) {
+            deleteObjectsRequest.addKeyAndVersion(redundantKey);
         }
         if (deleteObjectsRequest.getKeyAndVersions().length > 0) {
             obsClient.deleteObjects(deleteObjectsRequest);
