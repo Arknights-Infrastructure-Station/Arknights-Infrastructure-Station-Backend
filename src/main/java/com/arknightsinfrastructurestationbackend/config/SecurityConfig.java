@@ -1,5 +1,6 @@
 package com.arknightsinfrastructurestationbackend.config;
 
+import com.arknightsinfrastructurestationbackend.config.data.SecurityPaths;
 import com.arknightsinfrastructurestationbackend.config.filter.JwtRequestFilter;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
@@ -31,9 +32,7 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeRequests((authorize) -> authorize
-                        .requestMatchers("/user/**","/starRecord/**",
-                                "/recyclingWorkFile/**","/stagingWorkFile/**",
-                                "/workFile/create","workFile/update","workFile/screenPostedWorkFileList").hasRole("USER")
+                        .requestMatchers(SecurityPaths.PROTECTED_PATHS.toArray(new String[0])).hasRole("USER")
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 

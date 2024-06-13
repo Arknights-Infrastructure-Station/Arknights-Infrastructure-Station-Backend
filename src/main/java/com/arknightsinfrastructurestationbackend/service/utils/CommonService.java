@@ -96,12 +96,13 @@ public class CommonService {
 
     /**
      * 将数组形式的字符串转换为字符串数组
+     *
      * @param stringArray 字符串形式的数组
      * @return 字符串数组
      * @throws JsonProcessingException 解析异常
      */
     public String[] convertStringArray(String stringArray) throws JsonProcessingException {
-        if (stringArray.isBlank() || !"null".equals(stringArray)) {
+        if (stringArray == null || stringArray.isBlank() || !"null".equals(stringArray)) {
             return null;
         }
         return objectMapper.readValue(stringArray, String[].class);

@@ -71,7 +71,7 @@ public class ScheduledTasksService {
     @Scheduled(cron = "0 0 0 * * ?")
     public void clearRedundantKeys() {
         //该值与Linux服务器/etc/profile中的值保持一致
-        if (!environment.isBlank() && "production".equals(environment)) {
+        if (environment != null && !environment.isBlank() && "production".equals(environment)) {
             try {
                 mowerBucketService.deleteRedundantKeys(workFileIntegrationService.getAllPictureKeys());
             } catch (JsonProcessingException e) {

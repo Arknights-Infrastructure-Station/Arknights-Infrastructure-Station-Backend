@@ -1,7 +1,6 @@
 package com.arknightsinfrastructurestationbackend.config;
 
 import lombok.NonNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -9,9 +8,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class CorsConfig {
-
-    @Value("${custom-data.url}")
-//    private String url;
 
     /**
      * 允许前端请求跨域

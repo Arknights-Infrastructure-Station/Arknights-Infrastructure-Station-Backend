@@ -25,14 +25,11 @@ import java.util.List;
 import java.util.Random;
 
 @Service
-@AllArgsConstructor
-@Data
 @Slf4j
 public class MowerBucketService {
     private final String ak = System.getenv("HUAWEICLOUD_OBS_ACCESS_KEY_ID");
     private final String sk = System.getenv("HUAWEICLOUD_OBS_SECRET_ACCESS_KEY_ID");
     private final String endPoint = "https://obs.cn-north-4.myhuaweicloud.com";
-    @Value("${bucketNames.name1}")
     private final String bucketName;
     private final ObsClient obsClient = new ObsClient(ak, sk, endPoint);
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -40,6 +37,11 @@ public class MowerBucketService {
     private final Random random = new Random(System.currentTimeMillis());
 
     private final CommonService commonService;
+
+    public MowerBucketService(@Value("${bucketNames.name}") String bucketName, CommonService commonService) {
+        this.bucketName = bucketName;
+        this.commonService = commonService;
+    }
 
     private String generateRandomString(int length) {
         String characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
