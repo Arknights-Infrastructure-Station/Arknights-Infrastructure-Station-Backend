@@ -8,8 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obs.services.ObsClient;
 import com.obs.services.exception.ObsException;
 import com.obs.services.model.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
@@ -146,6 +144,8 @@ public class MowerBucketService {
     @RedisLock(key = "'lock:WebPStorage:uploadMultipleWebP:' + #picturesArrayString")
     public String uploadMultipleWebP(String picturesArrayString) throws JsonProcessingException {
         String[] pictures = commonService.convertStringArray(picturesArrayString);
+        if (pictures == null || pictures.length == 0)
+            return null;
         if (pictures.length > 5) {
             throw new ServiceException("图片数量超过限制，最多允许上传5张图片");
         }
@@ -179,6 +179,7 @@ public class MowerBucketService {
     }
 
     //该方法不方便加@CacheEvict注解
+
     /**
      * 删除多个WebP文件
      *
@@ -188,6 +189,8 @@ public class MowerBucketService {
     @RedisLock(key = "'lock:WebPStorage:removeMultipleWebP:' + #keysArrayString")
     public void removeMultipleWebP(String keysArrayString) throws JsonProcessingException {
         String[] keys = commonService.convertStringArray(keysArrayString);
+        if (keys == null || keys.length == 0)
+            return;
         for (String key : keys) {
             if (!obsClient.doesObjectExist(bucketName, key)) {
                 throw new ServiceException("桶中未找到键：" + key);
@@ -202,6 +205,7 @@ public class MowerBucketService {
 
     /**
      * 批量删除冗余的key
+     *
      * @param existedKeys 数据库中的所有key
      */
     public void deleteRedundantKeys(List<String> existedKeys) {

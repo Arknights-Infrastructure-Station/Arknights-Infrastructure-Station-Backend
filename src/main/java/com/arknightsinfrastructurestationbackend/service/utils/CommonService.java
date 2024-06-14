@@ -102,7 +102,8 @@ public class CommonService {
      * @throws JsonProcessingException 解析异常
      */
     public String[] convertStringArray(String stringArray) throws JsonProcessingException {
-        if (stringArray == null || stringArray.isBlank() || !"null".equals(stringArray)) {
+        //"null"是前端JSON.stringify(null)的结果
+        if (stringArray == null || stringArray.isBlank() || "null".equals(stringArray)) {
             return null;
         }
         return objectMapper.readValue(stringArray, String[].class);

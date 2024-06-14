@@ -119,7 +119,7 @@ public class WorkFileService {
             existingWorkFile.setLayout(workFile.getLayout());
             existingWorkFile.setDescription(workFile.getDescription());
 
-            existingWorkFile.setDescriptionPictures(mowerBucketService.uploadMultipleWebP(existingWorkFile.getDescriptionPictures()));
+            existingWorkFile.setDescriptionPictures(mowerBucketService.uploadMultipleWebP(workFile.getDescriptionPictures()));
 
             existingWorkFile.setStorageType(workFile.getStorageType());
             if (StorageType.PICTURE_KEY.getValue().equals(existingWorkFile.getStorageType())) {

@@ -116,7 +116,7 @@ public class StagingWorkFileService {
             existingStagingWorkFile.setLayout(stagingWorkFile.getLayout());
             existingStagingWorkFile.setDescription(stagingWorkFile.getDescription());
 
-            existingStagingWorkFile.setDescriptionPictures(mowerBucketService.uploadMultipleWebP(existingStagingWorkFile.getDescriptionPictures()));
+            existingStagingWorkFile.setDescriptionPictures(mowerBucketService.uploadMultipleWebP(stagingWorkFile.getDescriptionPictures()));
 
             existingStagingWorkFile.setStorageType(stagingWorkFile.getStorageType());
             if (StorageType.PICTURE_KEY.getValue().equals(existingStagingWorkFile.getStorageType())) {
