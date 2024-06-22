@@ -22,7 +22,6 @@ import com.arknightsinfrastructurestationbackend.service.workFile.adapter.Adapte
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -216,10 +215,10 @@ public class WorkFileService {
     public List<WorkFile> screenWorkFileList(WorkFileScreen workFileScreen) {
         LambdaQueryWrapper<WorkFile> queryWrapper = buildWrapper(workFileScreen);
 
-        // 分页，当currentPage>100时，将currentPage限制为100
-        int currentPage = Math.min(workFileScreen.getCurrentPage(), 100);
+        // 分页，限制查询到的总条目数
+        int currentPage = workFileScreen.getCurrentPage();
         int pageSize = workFileScreen.getPageSize();
-        int offset = (currentPage - 1) * pageSize;
+        int offset = Math.min((currentPage - 1) * pageSize, 10000 - pageSize);
         queryWrapper.last("LIMIT " + offset + "," + pageSize);
 
         return workFileMapper.selectList(queryWrapper);
