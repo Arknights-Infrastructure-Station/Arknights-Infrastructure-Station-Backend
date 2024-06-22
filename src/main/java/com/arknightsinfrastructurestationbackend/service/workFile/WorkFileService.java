@@ -216,8 +216,8 @@ public class WorkFileService {
     public List<WorkFile> screenWorkFileList(WorkFileScreen workFileScreen) {
         LambdaQueryWrapper<WorkFile> queryWrapper = buildWrapper(workFileScreen);
 
-        // 分页
-        int currentPage = workFileScreen.getCurrentPage();
+        // 分页，当currentPage>100时，将currentPage限制为100
+        int currentPage = Math.min(workFileScreen.getCurrentPage(), 100);
         int pageSize = workFileScreen.getPageSize();
         int offset = (currentPage - 1) * pageSize;
         queryWrapper.last("LIMIT " + offset + "," + pageSize);
