@@ -23,7 +23,6 @@ import java.io.IOException;
 public class JwtRequestFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
     private final SelectUserService selectUserService;
-    private final UserService userService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)
@@ -59,8 +58,6 @@ public class JwtRequestFilter extends OncePerRequestFilter {
                 setSecurityContext(user, request);
                 chain.doFilter(request, response);
             } else {
-                // Token无效或用户为空，执行注销操作
-                userService.logout(jwt);
                 // 返回401错误，要求前端重新登录
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 response.getWriter().write("{\"message\": \"Token无效，请重新登录\"}");
