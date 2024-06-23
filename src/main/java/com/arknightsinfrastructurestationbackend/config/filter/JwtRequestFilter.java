@@ -3,6 +3,7 @@ package com.arknightsinfrastructurestationbackend.config.filter;
 import com.arknightsinfrastructurestationbackend.config.data.SecurityPaths;
 import com.arknightsinfrastructurestationbackend.entitiy.user.User;
 import com.arknightsinfrastructurestationbackend.service.user.SelectUserService;
+import com.arknightsinfrastructurestationbackend.service.user.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,6 +23,7 @@ import java.io.IOException;
 public class JwtRequestFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
     private final SelectUserService selectUserService;
+    private final UserService userService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)
@@ -44,7 +46,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         Long uid = null;
         String jwt = null;
 
-        if (authorizationHeader.startsWith("Bearer ")) {
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
             jwt = authorizationHeader.substring(7);
             uid = jwtUtil.extractUid(jwt); // 从Token中提取uid，能提取是因为uid作为subject参与了Token的生成
         }
@@ -55,7 +57,15 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             if (user != null && jwtUtil.validateToken(jwt, user)) {
                 // Token是有效的
                 setSecurityContext(user, request);
+                chain.doFilter(request, response);
+            } else {
+                // Token无效或用户为空，执行注销操作
+                userService.logout(jwt);
+                // 返回401错误，要求前端重新登录
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().write("{\"message\": \"Token无效，请重新登录\"}");
             }
+            return;
         }
 
         chain.doFilter(request, response);
