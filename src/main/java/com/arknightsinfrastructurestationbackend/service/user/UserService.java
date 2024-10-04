@@ -16,7 +16,7 @@ import com.arknightsinfrastructurestationbackend.dto.user.UserLRFData;
 import com.arknightsinfrastructurestationbackend.mapper.user.UserMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
-import org.json.JSONObject;
+import org.json.JSONArray;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -61,8 +61,8 @@ public class UserService {
         newUser.setStatus("normal");
         newUser.setToken("");
         newUser.setAvatar("char_002_amiya");
-        newUser.setOperators(new JSONObject().toString());
-        newUser.setInfrastructure(new JSONObject().toString());
+        newUser.setOperators(new JSONArray().toString());
+        newUser.setInfrastructure(new JSONArray().toString());
 
         // 插入数据
         int insertResult = userMapper.insert(newUser);

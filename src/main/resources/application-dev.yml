@@ -37,7 +37,7 @@ caching:
       max: 200
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/arknights_infrastructure_station?useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://localhost:3306/arknights_infrastructure_station?allowPublicKeyRetrieval=true&useSSL=false&useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
     username: #数据库用户名
     password: #MySQL密码
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -79,5 +79,6 @@ logging:
     root: INFO
     com.example: DEBUG
     com.baomidou.mybatisplus: DEBUG
+    org.springframework: DEBUG
     org.mybatis: DEBUG
 
