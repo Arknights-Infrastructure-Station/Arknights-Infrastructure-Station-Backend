@@ -3,7 +3,6 @@ package com.arknightsinfrastructurestationbackend.config.filter;
 import com.arknightsinfrastructurestationbackend.config.data.SecurityPaths;
 import com.arknightsinfrastructurestationbackend.entitiy.user.User;
 import com.arknightsinfrastructurestationbackend.service.user.SelectUserService;
-import com.arknightsinfrastructurestationbackend.service.user.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -28,45 +27,41 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)
             throws ServletException, IOException {
 
-        // 获取请求路径
         String path = request.getRequestURI();
-
-        // 检查请求路径是否在受保护路径列表中
-        boolean isProtectedPath = SecurityPaths.PROTECTED_PATHS.stream().anyMatch(path::startsWith);
+        boolean isProtectedPath = SecurityPaths.USER_PATHS.stream().anyMatch(path::startsWith);
 
         if (!isProtectedPath) {
-            // 如果不在受保护路径列表中，直接放行
             chain.doFilter(request, response);
             return;
         }
 
         final String authorizationHeader = request.getHeader("Authorization");
 
-        Long uid = null;
-        String jwt = null;
-
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            jwt = authorizationHeader.substring(7);
-            uid = jwtUtil.extractUid(jwt); // 从Token中提取uid，能提取是因为uid作为subject参与了Token的生成
-        }
-
-        if (uid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = this.selectUserService.getUserByToken(jwt);
-
-            if (user != null && jwtUtil.validateToken(jwt, user)) {
-                // Token是有效的
-                setSecurityContext(user, request);
-                chain.doFilter(request, response);
-            } else {
-                // 返回401错误，要求前端重新登录
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.getWriter().write("{\"message\": \"Token无效，请重新登录\"}");
-            }
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            // Deny access if Authorization header is missing or invalid
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("{\"message\": \"授权标头缺失或无效\"}");
             return;
         }
 
-        chain.doFilter(request, response);
+        String jwt = authorizationHeader.substring(7);
+        Long uid = jwtUtil.extractUid(jwt);
+
+        if (uid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+            User user = selectUserService.getUserByToken(jwt);
+
+            if (user != null && jwtUtil.validateToken(jwt, user)) {
+                setSecurityContext(user, request);
+                chain.doFilter(request, response);
+                return;
+            }
+        }
+
+        // Deny access if token validation fails or uid is null
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.getWriter().write("{\"message\": \"令牌无效或用户未通过身份验证\"}");
     }
+
 
     private void setSecurityContext(User user, HttpServletRequest request) {
         // 将用户的权限写入到安全上下文中

@@ -32,7 +32,8 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeRequests((authorize) -> authorize
-                        .requestMatchers(SecurityPaths.PROTECTED_PATHS.toArray(new String[0])).hasRole("USER")
+                        .requestMatchers(SecurityPaths.USER_PATHS.toArray(new String[0])).hasRole("USER")
+                        .requestMatchers(SecurityPaths.ADMIN_PATHS.toArray(new String[0])).hasRole("ADMIN")
                         .anyRequest().permitAll())
                 .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 

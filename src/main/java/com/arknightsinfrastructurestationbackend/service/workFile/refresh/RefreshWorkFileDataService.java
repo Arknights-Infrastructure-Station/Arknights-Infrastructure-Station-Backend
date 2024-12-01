@@ -1,13 +1,11 @@
 package com.arknightsinfrastructurestationbackend.service.workFile.refresh;
 
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
-import com.arknightsinfrastructurestationbackend.entitiy.workFile.adapter.WorkFileInterface;
-import com.arknightsinfrastructurestationbackend.global.type.StorageType;
 import com.arknightsinfrastructurestationbackend.mapper.workFile.WorkFileMapper;
 import com.arknightsinfrastructurestationbackend.service.buckets.MowerBucketService;
 import com.arknightsinfrastructurestationbackend.service.user.DownloadRecordService;
 import com.arknightsinfrastructurestationbackend.service.user.UserRateService;
-import com.arknightsinfrastructurestationbackend.service.workFile.StaredWorkFileService;
+import com.arknightsinfrastructurestationbackend.service.workFile.user.StaredWorkFileService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -41,23 +39,4 @@ public class RefreshWorkFileDataService {
         }
         return workFileList;
     }
-
-//    /**
-//     * 恢复每一个存储方式为pictureKey的作业的作业内容（由key恢复为数据url），List<WorkFile>和List<StagingWorkFile>均会调用
-//     *
-//     * @param fileList 要刷新的作业列表或暂存作业列表
-//     * @param <W>      List<WorkFile>或List<StagingWorkFile>
-//     * @return 刷新后的作业列表或暂存作业列表
-//     */
-//    public <W extends WorkFileInterface> List<W> recoverPictureKey(List<W> fileList) {
-//        // 恢复每一个存储方式为pictureKey的作业的作业内容（由key恢复为数据url）
-//        for (int i = 0; i < fileList.size(); i++) {
-//            W file = fileList.get(i);
-//            if (StorageType.PICTURE_KEY.getValue().equals(file.getStorageType())) {
-//                file.setFileContent(mowerBucketService.syncDownloadWebP(file.getFileContent()));
-//                fileList.set(i, file);
-//            }
-//        }
-//        return fileList;
-//    }
 }

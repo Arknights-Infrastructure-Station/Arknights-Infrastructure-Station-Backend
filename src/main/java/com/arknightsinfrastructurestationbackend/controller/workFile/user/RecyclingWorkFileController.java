@@ -1,16 +1,16 @@
-package com.arknightsinfrastructurestationbackend.controller.workFile;
+package com.arknightsinfrastructurestationbackend.controller.workFile.user;
 
 import com.arknightsinfrastructurestationbackend.common.exception.ServiceException;
 import com.arknightsinfrastructurestationbackend.common.tools.FileConverter;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.common.tools.Token;
-import com.arknightsinfrastructurestationbackend.dto.query.WorkFileSimpleSearch;
+import com.arknightsinfrastructurestationbackend.dto.query.user.WorkFileSimpleSearch;
 import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_RecyclingWorkFile;
 import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_WorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
-import com.arknightsinfrastructurestationbackend.service.workFile.RecyclingWorkFileService;
-import com.arknightsinfrastructurestationbackend.service.workFile.WorkFileService;
+import com.arknightsinfrastructurestationbackend.service.workFile.user.RecyclingWorkFileService;
+import com.arknightsinfrastructurestationbackend.service.workFile.user.WorkFileService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;

@@ -1,14 +1,13 @@
-package com.arknightsinfrastructurestationbackend.service.workFile;
+package com.arknightsinfrastructurestationbackend.service.workFile.user;
 
 import com.arknightsinfrastructurestationbackend.common.exception.ServiceException;
 import com.arknightsinfrastructurestationbackend.common.tools.Log;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
-import com.arknightsinfrastructurestationbackend.dto.query.WorkFileSimpleSearch;
+import com.arknightsinfrastructurestationbackend.dto.query.user.WorkFileSimpleSearch;
 import com.arknightsinfrastructurestationbackend.entitiy.user.DownloadRecord;
 import com.arknightsinfrastructurestationbackend.entitiy.user.StarRecord;
 import com.arknightsinfrastructurestationbackend.entitiy.user.User;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;
-import com.arknightsinfrastructurestationbackend.entitiy.workFile.StagingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
 import com.arknightsinfrastructurestationbackend.global.type.StorageType;
 import com.arknightsinfrastructurestationbackend.mapper.user.DownloadRecordMapper;

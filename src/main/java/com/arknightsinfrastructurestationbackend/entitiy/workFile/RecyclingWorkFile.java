@@ -5,6 +5,9 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * 待回收的作业
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

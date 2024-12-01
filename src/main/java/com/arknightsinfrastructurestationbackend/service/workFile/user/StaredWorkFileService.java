@@ -1,7 +1,7 @@
-package com.arknightsinfrastructurestationbackend.service.workFile;
+package com.arknightsinfrastructurestationbackend.service.workFile.user;
 
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
-import com.arknightsinfrastructurestationbackend.dto.query.WorkFileSimpleSearch;
+import com.arknightsinfrastructurestationbackend.dto.query.user.WorkFileSimpleSearch;
 import com.arknightsinfrastructurestationbackend.entitiy.user.StarRecord;
 import com.arknightsinfrastructurestationbackend.entitiy.user.User;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;

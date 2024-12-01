@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class F_WorkFile {
-
     private String id; // 作业ID（String类型）
     private String author; // 作业作者
     private String authorId; // 作业作者的ID（String类型）

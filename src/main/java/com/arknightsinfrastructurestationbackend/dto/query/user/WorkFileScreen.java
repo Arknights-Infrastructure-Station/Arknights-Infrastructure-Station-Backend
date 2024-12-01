@@ -1,4 +1,4 @@
-package com.arknightsinfrastructurestationbackend.dto.query;
+package com.arknightsinfrastructurestationbackend.dto.query.user;
 
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;

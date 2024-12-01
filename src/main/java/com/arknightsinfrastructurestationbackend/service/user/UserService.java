@@ -12,7 +12,7 @@ import com.arknightsinfrastructurestationbackend.entitiy.user.User;
 import com.arknightsinfrastructurestationbackend.dto.info.InfrastructureInfo;
 import com.arknightsinfrastructurestationbackend.dto.info.OperatorInfo;
 import com.arknightsinfrastructurestationbackend.dto.info.UserInfo;
-import com.arknightsinfrastructurestationbackend.dto.user.UserLRFData;
+import com.arknightsinfrastructurestationbackend.dto.user.user.UserLRFData;
 import com.arknightsinfrastructurestationbackend.mapper.user.UserMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;

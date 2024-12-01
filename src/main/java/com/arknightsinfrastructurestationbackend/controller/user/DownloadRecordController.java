@@ -3,16 +3,12 @@ package com.arknightsinfrastructurestationbackend.controller.user;
 import com.arknightsinfrastructurestationbackend.common.aspect.tokenRefresh.ExcludeFromTokenRefresh;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.common.tools.Token;
-import com.arknightsinfrastructurestationbackend.dto.query.WorkFileSimpleSearch;
-import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
+import com.arknightsinfrastructurestationbackend.dto.query.user.WorkFileSimpleSearch;
 import com.arknightsinfrastructurestationbackend.service.user.DownloadRecordService;
-import com.arknightsinfrastructurestationbackend.service.workFile.WorkFileService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/download")

@@ -1,13 +1,13 @@
-package com.arknightsinfrastructurestationbackend.controller.workFile;
+package com.arknightsinfrastructurestationbackend.controller.workFile.user;
 
 import com.arknightsinfrastructurestationbackend.common.tools.FileConverter;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.common.tools.Token;
-import com.arknightsinfrastructurestationbackend.dto.query.WorkFileSimpleSearch;
+import com.arknightsinfrastructurestationbackend.dto.query.user.WorkFileSimpleSearch;
 import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_StarRecord;
 import com.arknightsinfrastructurestationbackend.dto.wrapperClass.F_WorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.user.StarRecord;
-import com.arknightsinfrastructurestationbackend.service.workFile.StaredWorkFileService;
+import com.arknightsinfrastructurestationbackend.service.workFile.user.StaredWorkFileService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;

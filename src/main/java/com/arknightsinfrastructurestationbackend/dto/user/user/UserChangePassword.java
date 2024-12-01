@@ -1,4 +1,4 @@
-package com.arknightsinfrastructurestationbackend.dto.user;
+package com.arknightsinfrastructurestationbackend.dto.user.user;
 
 import lombok.Data;
 

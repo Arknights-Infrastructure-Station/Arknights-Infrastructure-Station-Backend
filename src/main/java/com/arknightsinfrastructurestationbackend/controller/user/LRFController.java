@@ -4,8 +4,8 @@ import com.arknightsinfrastructurestationbackend.common.aspect.tokenRefresh.Excl
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.common.tools.Token;
 import com.arknightsinfrastructurestationbackend.dto.info.UserInfo;
-import com.arknightsinfrastructurestationbackend.dto.user.UserLRFData;
-import com.arknightsinfrastructurestationbackend.dto.user.UserLoginResponse;
+import com.arknightsinfrastructurestationbackend.dto.user.user.UserLRFData;
+import com.arknightsinfrastructurestationbackend.dto.user.user.UserLoginResponse;
 import com.arknightsinfrastructurestationbackend.service.user.EmailService;
 import com.arknightsinfrastructurestationbackend.service.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
