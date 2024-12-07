@@ -13,11 +13,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CommonUserService extends BaseCommonUserService<AdminUser> {
+public class AdminUserService extends BaseCommonUserService<AdminUser> {
     private final AdminUserMapper adminUserMapper;
     private final SelectAdminUserService selectAdminUserService;
 
-    public CommonUserService(
+    public AdminUserService(
             AdminUserMapper adminUserMapper,
             SelectAdminUserService selectAdminUserService,
             PasswordEncoder passwordEncoder,
