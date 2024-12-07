@@ -9,7 +9,6 @@ import com.arknightsinfrastructurestationbackend.mapper.workFile.StagingWorkFile
 import com.arknightsinfrastructurestationbackend.mapper.workFile.WorkFileMapper;
 import com.arknightsinfrastructurestationbackend.service.utils.CommonService;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -24,14 +23,14 @@ public class WorkFileIntegrationService {
     private final StagingWorkFileMapper stagingWorkFileMapper;
     private final RecyclingWorkFileMapper recyclingWorkFileMapper;
     private final CommonService commonService;
-    private final ObjectMapper objectMapper=new ObjectMapper();
 
     /**
      * 获取所有作业的图片key
+     *
      * @return List<String> 所有作业的图片key
      */
     public List<String> getAllPictureKeys() throws JsonProcessingException {
-        List<String> keys=new ArrayList<>();
+        List<String> keys = new ArrayList<>();
 
         List<WorkFile> workFileList = workFileMapper.selectList(null);
         List<StagingWorkFile> stagingWorkFileList = stagingWorkFileMapper.selectList(null);
