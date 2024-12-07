@@ -12,7 +12,6 @@ import com.arknightsinfrastructurestationbackend.service.workFile.adapter.Adapte
 import com.arknightsinfrastructurestationbackend.service.workFile.user.commonUser.BaseStagingWorkFileService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +36,7 @@ public class StagingWorkFileAdminService extends BaseStagingWorkFileService {
      *
      * @param stagingWorkFile 要插入的暂存作业对象
      * @return 操作结果对象，表示插入操作的成功或失败状态
-     * @throws ServiceException 业务逻辑处理异常时抛出
+     * @throws ServiceException        业务逻辑处理异常时抛出
      * @throws JsonProcessingException 当处理JSON相关数据出错时抛出
      */
     @Transactional(rollbackFor = ServiceException.class)

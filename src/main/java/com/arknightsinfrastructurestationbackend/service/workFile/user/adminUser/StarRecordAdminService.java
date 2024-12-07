@@ -7,8 +7,6 @@ import com.arknightsinfrastructurestationbackend.mapper.user.ordinaryUser.StarRe
 import com.arknightsinfrastructurestationbackend.service.workFile.adapter.AdapterService;
 import com.arknightsinfrastructurestationbackend.service.workFile.user.commonUser.BaseStarRecordService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

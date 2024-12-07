@@ -15,17 +15,14 @@ public abstract class SensitiveData {
             return value;
         }
 
-        StringBuilder builder = new StringBuilder();
         // 添加保留的前start个字符
-        builder.append(value, 0, start);
+        return value.substring(0, start) +
 
-        // 用星号替换中间的部分
-        builder.append("*".repeat(maskLength));
+                // 用星号替换中间的部分
+                "*".repeat(maskLength) +
 
-        // 添加保留的后end个字符
-        builder.append(value, value.length() - end, value.length());
-
-        return builder.toString();
+                // 添加保留的后end个字符
+                value.substring(value.length() - end);
     }
 
     public void handleSensitiveData() {

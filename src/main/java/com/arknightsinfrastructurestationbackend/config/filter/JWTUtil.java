@@ -132,7 +132,7 @@ public class JWTUtil {
                 }
             } else if (UserType.ADMIN_USER.getName().equals(userType)) {
                 // 检查管理员 Token 是否唯一
-                if (selectAdminUserService.getAdminUserByToken(token) == null) {
+                if (selectAdminUserService.getByToken(token) == null) {
                     break;
                 }
             }

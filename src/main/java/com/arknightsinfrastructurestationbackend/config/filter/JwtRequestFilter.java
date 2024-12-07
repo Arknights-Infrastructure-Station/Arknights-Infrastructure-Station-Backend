@@ -111,7 +111,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private void handleAdminRequest(String jwt, HttpServletRequest request,
                                     HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        AdminUser adminUser = selectAdminUserService.getAdminUserByToken(jwt);
+        AdminUser adminUser = selectAdminUserService.getByToken(jwt);
         if (adminUser != null && jwtUtil.validateAdminToken(jwt, adminUser)) {
             setSecurityContext(adminUser, request);
             chain.doFilter(request, response);

@@ -4,7 +4,6 @@ import com.arknightsinfrastructurestationbackend.common.exception.ServiceExcepti
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.dto.query.adminUser.WorkFileAdminScreen;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
-import com.arknightsinfrastructurestationbackend.global.type.StorageType;
 import com.arknightsinfrastructurestationbackend.mapper.workFile.WorkFileMapper;
 import com.arknightsinfrastructurestationbackend.service.buckets.MowerBucketService;
 import com.arknightsinfrastructurestationbackend.service.utils.CommonService;
@@ -12,7 +11,6 @@ import com.arknightsinfrastructurestationbackend.service.workFile.adapter.Adapte
 import com.arknightsinfrastructurestationbackend.service.workFile.user.commonUser.BaseWorkFileService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,7 +35,7 @@ public class WorkFileAdminService extends BaseWorkFileService {
      *
      * @param workFile 要插入的作业文件对象
      * @return 操作结果对象，表示插入操作的成功或失败状态
-     * @throws ServiceException 当业务逻辑处理出错时抛出
+     * @throws ServiceException        当业务逻辑处理出错时抛出
      * @throws JsonProcessingException 当处理JSON相关数据出错时抛出
      */
     @Transactional(rollbackFor = ServiceException.class)

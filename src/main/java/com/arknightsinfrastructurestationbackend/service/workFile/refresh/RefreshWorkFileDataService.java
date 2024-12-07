@@ -19,7 +19,6 @@ public class RefreshWorkFileDataService {
     private final StaredWorkFileService staredWorkFileService;
     private final DownloadRecordService downloadRecordService;
     private final UserRateService userRateService;
-    private final MowerBucketService mowerBucketService;
 
     /**
      * 刷新每个作业的收藏数、下载数和评分，只有List<WorkFile>会调用
