@@ -3,6 +3,7 @@ package com.arknightsinfrastructurestationbackend.service.user.commonUser;
 import com.arknightsinfrastructurestationbackend.entitiy.user.commonUser.BaseUser;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -11,10 +12,17 @@ public abstract class BaseSelectCommonUserService<T extends BaseUser> {
 
     protected abstract LambdaQueryWrapper<T> createQueryWrapper();
 
-    public T getByToken(String token) {
+    /**
+     * 通用查询方法
+     *
+     * @param column 查询字段的 Lambda 表达式
+     * @param value  查询值
+     * @return 查询结果
+     */
+    private T getByField(SFunction<T, ?> column, Object value) {
         try {
             LambdaQueryWrapper<T> queryWrapper = createQueryWrapper();
-            queryWrapper.eq(T::getToken, token);
+            queryWrapper.eq(column, value);
             return getMapper().selectOne(queryWrapper);
         } catch (Exception e) {
             log.error("数据库查询错误: {}", e.getMessage(), e);
@@ -22,14 +30,11 @@ public abstract class BaseSelectCommonUserService<T extends BaseUser> {
         }
     }
 
+    public T getByToken(String token) {
+        return getByField(T::getToken, token);
+    }
+
     public T getByEmail(String email) {
-        try {
-            LambdaQueryWrapper<T> queryWrapper = createQueryWrapper();
-            queryWrapper.eq(T::getEmail, email);
-            return getMapper().selectOne(queryWrapper);
-        } catch (Exception e) {
-            log.error("数据库查询错误: {}", e.getMessage(), e);
-            return null;
-        }
+        return getByField(T::getEmail, email);
     }
 }
