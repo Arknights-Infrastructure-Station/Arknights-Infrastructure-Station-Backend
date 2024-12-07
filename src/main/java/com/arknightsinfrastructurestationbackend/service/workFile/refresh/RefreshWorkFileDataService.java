@@ -3,9 +3,9 @@ package com.arknightsinfrastructurestationbackend.service.workFile.refresh;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
 import com.arknightsinfrastructurestationbackend.mapper.workFile.WorkFileMapper;
 import com.arknightsinfrastructurestationbackend.service.buckets.MowerBucketService;
-import com.arknightsinfrastructurestationbackend.service.user.DownloadRecordService;
-import com.arknightsinfrastructurestationbackend.service.user.UserRateService;
-import com.arknightsinfrastructurestationbackend.service.workFile.user.StaredWorkFileService;
+import com.arknightsinfrastructurestationbackend.service.commonUser.DownloadRecordService;
+import com.arknightsinfrastructurestationbackend.service.commonUser.UserRateService;
+import com.arknightsinfrastructurestationbackend.service.workFile.commonUser.StaredWorkFileService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 

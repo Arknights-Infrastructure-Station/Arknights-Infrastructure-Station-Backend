@@ -1,8 +1,11 @@
 package com.arknightsinfrastructurestationbackend.config.filter;
 
 import com.arknightsinfrastructurestationbackend.config.data.SecurityPaths;
-import com.arknightsinfrastructurestationbackend.entitiy.user.User;
-import com.arknightsinfrastructurestationbackend.service.user.SelectUserService;
+import com.arknightsinfrastructurestationbackend.entitiy.adminUser.AdminUser;
+import com.arknightsinfrastructurestationbackend.entitiy.commonUser.User;
+import com.arknightsinfrastructurestationbackend.global.type.UserType;
+import com.arknightsinfrastructurestationbackend.service.adminUser.SelectAdminUserService;
+import com.arknightsinfrastructurestationbackend.service.commonUser.SelectUserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -22,54 +25,123 @@ import java.io.IOException;
 public class JwtRequestFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
     private final SelectUserService selectUserService;
+    private final SelectAdminUserService selectAdminUserService;
 
     @Override
-    protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain chain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+                                    @NonNull HttpServletResponse response,
+                                    @NonNull FilterChain chain)
             throws ServletException, IOException {
 
         String path = request.getRequestURI();
-        boolean isProtectedPath = SecurityPaths.USER_PATHS.stream().anyMatch(path::startsWith);
+        boolean isProtectedPath = SecurityPaths.USER_PATHS.stream().anyMatch(path::startsWith)
+                || SecurityPaths.ADMIN_PATHS.stream().anyMatch(path::startsWith);
 
         if (!isProtectedPath) {
             chain.doFilter(request, response);
             return;
         }
 
-        final String authorizationHeader = request.getHeader("Authorization");
+        String requestType = request.getHeader("requestType");
+        if (requestType == null) {
+            unauthorizedResponse(response, "请求类型缺失");
+            return;
+        }
 
+        String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            // Deny access if Authorization header is missing or invalid
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("{\"message\": \"授权标头缺失或无效\"}");
+            unauthorizedResponse(response, "授权标头缺失或无效");
             return;
         }
 
         String jwt = authorizationHeader.substring(7);
-        Long uid = jwtUtil.extractUid(jwt);
+        Long uid;
+        String userType;
 
-        if (uid != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            User user = selectUserService.getUserByToken(jwt);
-
-            if (user != null && jwtUtil.validateToken(jwt, user)) {
-                setSecurityContext(user, request);
-                chain.doFilter(request, response);
-                return;
-            }
+        try {
+            uid = jwtUtil.extractUid(jwt);
+            userType = jwtUtil.extractUserType(jwt);
+        } catch (Exception e) {
+            unauthorizedResponse(response, "令牌无效或格式错误");
+            return;
         }
 
-        // Deny access if token validation fails or uid is null
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.getWriter().write("{\"message\": \"令牌无效或用户未通过身份验证\"}");
+        if (uid == null || userType == null) {
+            unauthorizedResponse(response, "令牌无效或用户未通过身份验证");
+            return;
+        }
+
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            chain.doFilter(request, response);
+            return;
+        }
+
+        switch (requestType) {
+            case "UserRequest":
+                if (!UserType.COMMON_USER.getName().equals(userType)) {
+                    unauthorizedResponse(response, "请求类型与 Token 类型不匹配");
+                    return;
+                }
+                handleUserRequest(jwt, request, response, chain);
+                break;
+            case "AdminUserRequest":
+                if (!UserType.ADMIN_USER.getName().equals(userType)) {
+                    unauthorizedResponse(response, "请求类型与 Token 类型不匹配");
+                    return;
+                }
+                handleAdminRequest(jwt, request, response, chain);
+                break;
+            default:
+                unauthorizedResponse(response, "未知的请求类型");
+        }
     }
 
+    private void handleUserRequest(String jwt, HttpServletRequest request,
+                                   HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        User user = selectUserService.getUserByToken(jwt);
+        if (user != null && jwtUtil.validateUserToken(jwt, user)) {
+            setSecurityContext(user, request);
+            chain.doFilter(request, response);
+        } else {
+            unauthorizedResponse(response, "令牌无效或用户未通过身份验证");
+        }
+    }
+
+    private void handleAdminRequest(String jwt, HttpServletRequest request,
+                                    HttpServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        AdminUser adminUser = selectAdminUserService.getAdminUserByToken(jwt);
+        if (adminUser != null && jwtUtil.validateAdminToken(jwt, adminUser)) {
+            setSecurityContext(adminUser, request);
+            chain.doFilter(request, response);
+        } else {
+            unauthorizedResponse(response, "令牌无效或管理员未通过身份验证");
+        }
+    }
 
     private void setSecurityContext(User user, HttpServletRequest request) {
-        // 将用户的权限写入到安全上下文中
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(
                         user, null, user.getAuthorities());
 
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+    }
+
+    private void setSecurityContext(AdminUser adminUser, HttpServletRequest request) {
+        UsernamePasswordAuthenticationToken authenticationToken =
+                new UsernamePasswordAuthenticationToken(
+                        adminUser, null, adminUser.getAuthorities());
+
+        authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+    }
+
+    private void unauthorizedResponse(HttpServletResponse response, String message)
+            throws IOException {
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"message\": \"" + message + "\"}");
     }
 }

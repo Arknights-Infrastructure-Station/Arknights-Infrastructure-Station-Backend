@@ -2,10 +2,9 @@ package com.arknightsinfrastructurestationbackend.service.workFile.adapter;
 
 import com.arknightsinfrastructurestationbackend.common.tools.JsonWorkProcessor;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
-import com.arknightsinfrastructurestationbackend.dto.query.admin.StarRecordAdminScreen;
-import com.arknightsinfrastructurestationbackend.dto.query.admin.WorkFileAdminScreen;
-import com.arknightsinfrastructurestationbackend.dto.query.user.WorkFileSimpleSearch;
-import com.arknightsinfrastructurestationbackend.global.type.SortOrderType;
+import com.arknightsinfrastructurestationbackend.dto.query.adminUser.StarRecordAdminScreen;
+import com.arknightsinfrastructurestationbackend.dto.query.adminUser.WorkFileAdminScreen;
+import com.arknightsinfrastructurestationbackend.dto.query.commonUser.WorkFileSimpleSearch;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,8 +19,8 @@ public class AdapterService {
         return JsonWorkProcessor.exchangeRoomDataForMower(sourceJson, requireJson);
     }
 
-    public <T> QueryWrapper<T> createLimitedQueryWrapper(WorkFileSimpleSearch workFileSimpleSearch, Long userId, Class<T> clazz) {
-        QueryWrapper<T> queryWrapper = createQueryWrapper(workFileSimpleSearch, userId, clazz);
+    public <T> QueryWrapper<T> createCommonUserLimitedQueryWrapper(WorkFileSimpleSearch workFileSimpleSearch, Long userId, Class<T> clazz) {
+        QueryWrapper<T> queryWrapper = createCommonUserQueryWrapper(workFileSimpleSearch, userId, clazz);
 
         int currentPage = workFileSimpleSearch.getCurrentPage();
         int pageSize = workFileSimpleSearch.getPageSize();
@@ -31,7 +30,7 @@ public class AdapterService {
         return queryWrapper;
     }
 
-    public <T> QueryWrapper<T> createQueryWrapper(WorkFileSimpleSearch workFileSimpleSearch, Long userId, Class<T> clazz) {
+    public <T> QueryWrapper<T> createCommonUserQueryWrapper(WorkFileSimpleSearch workFileSimpleSearch, Long userId, Class<T> clazz) {
         //除非实现同一个接口，否则泛型只能写死查询字段，考虑到不同作业文件之间的差别，暂不采用实现同一个接口的做法
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
         if (userId != null) {
@@ -73,12 +72,17 @@ public class AdapterService {
             queryWrapper.orderByDesc("staging_date");
         } catch (NoSuchFieldException ignored) {
         }
+        try {
+            clazz.getDeclaredField("clearTime");
+            queryWrapper.orderByDesc("clear_time");
+        } catch (NoSuchFieldException ignored) {
+        }
 
         return queryWrapper;
     }
 
-    public <T> QueryWrapper<T> createAdminLimitedQueryWrapper(WorkFileAdminScreen screen, Class<T> entityClass) {
-        QueryWrapper<T> queryWrapper = createAdminQueryWrapper(screen, entityClass);
+    public <T> QueryWrapper<T> createAdminUserLimitedQueryWrapper(WorkFileAdminScreen screen, Class<T> clazz) {
+        QueryWrapper<T> queryWrapper = createAdminUserQueryWrapper(screen, clazz);
 
         // 分页
         int currentPage = screen.getCurrentPage();
@@ -89,8 +93,13 @@ public class AdapterService {
         return queryWrapper;
     }
 
-    public <T> QueryWrapper<T> createAdminQueryWrapper(WorkFileAdminScreen screen, Class<T> entityClass) {
+    public <T> QueryWrapper<T> createAdminUserQueryWrapper(WorkFileAdminScreen screen, Class<T> clazz) {
         QueryWrapper<T> queryWrapper = new QueryWrapper<>();
+
+        // 作业ID
+        if (screen.getWid() != null && !"全部".equals(screen.getWid())) {
+            queryWrapper.eq("id", Long.parseLong(screen.getWid()));
+        }
 
         // 作业类型
         if (screen.getType() != null && !"全部".equals(screen.getType())) {
@@ -152,15 +161,22 @@ public class AdapterService {
             queryWrapper.between("score", screen.getScoreRange().get(0), screen.getScoreRange().get(1));
         }
 
-        // 排序
-        if (SortOrderType.RELEASE_DATE_DESC.getValue().equals(screen.getSortOrder()))
+        // 按创建时间倒序排序
+        try {
+            clazz.getDeclaredField("releaseDate");
             queryWrapper.orderByDesc("release_date");
-        else if (SortOrderType.RELEASE_DATE_ASC.getValue().equals(screen.getSortOrder()))
-            queryWrapper.orderByAsc("release_date");
-        else if (SortOrderType.SCORE_DESC.getValue().equals(screen.getSortOrder()))
-            queryWrapper.orderByDesc("score");
-        else if (SortOrderType.SCORE_ASC.getValue().equals(screen.getSortOrder()))
-            queryWrapper.orderByAsc("score");
+        } catch (NoSuchFieldException ignored) {
+        }
+        try {
+            clazz.getDeclaredField("stagingDate");
+            queryWrapper.orderByDesc("staging_date");
+        } catch (NoSuchFieldException ignored) {
+        }
+        try {
+            clazz.getDeclaredField("clearTime");
+            queryWrapper.orderByDesc("clear_time");
+        } catch (NoSuchFieldException ignored) {
+        }
 
         return queryWrapper;
     }

@@ -1,8 +1,8 @@
 package com.arknightsinfrastructurestationbackend.common.tools;
 
-import com.arknightsinfrastructurestationbackend.entitiy.user.UserRate;
+import com.arknightsinfrastructurestationbackend.entitiy.commonUser.UserRate;
 import com.arknightsinfrastructurestationbackend.dto.wrapperClass.*;
-import com.arknightsinfrastructurestationbackend.entitiy.user.StarRecord;
+import com.arknightsinfrastructurestationbackend.entitiy.commonUser.StarRecord;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.StagingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;

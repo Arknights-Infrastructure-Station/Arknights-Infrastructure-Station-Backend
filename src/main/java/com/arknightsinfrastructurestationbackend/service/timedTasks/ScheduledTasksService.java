@@ -1,8 +1,8 @@
 package com.arknightsinfrastructurestationbackend.service.timedTasks;
 
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;
-import com.arknightsinfrastructurestationbackend.mapper.user.UploadStagingWorkFileCountMapper;
-import com.arknightsinfrastructurestationbackend.mapper.user.UploadWorkFileCountMapper;
+import com.arknightsinfrastructurestationbackend.mapper.commonUser.UploadStagingWorkFileCountMapper;
+import com.arknightsinfrastructurestationbackend.mapper.commonUser.UploadWorkFileCountMapper;
 import com.arknightsinfrastructurestationbackend.mapper.workFile.RecyclingWorkFileMapper;
 import com.arknightsinfrastructurestationbackend.mapper.workFile.WorkFileMapper;
 import com.arknightsinfrastructurestationbackend.service.buckets.MowerBucketService;
