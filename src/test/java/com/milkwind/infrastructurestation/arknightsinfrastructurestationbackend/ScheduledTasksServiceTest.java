@@ -1,7 +1,7 @@
 package com.milkwind.infrastructurestation.arknightsinfrastructurestationbackend;
 
-import com.arknightsinfrastructurestationbackend.mapper.commonUser.UploadStagingWorkFileCountMapper;
-import com.arknightsinfrastructurestationbackend.mapper.commonUser.UploadWorkFileCountMapper;
+import com.arknightsinfrastructurestationbackend.mapper.user.ordinaryUser.UploadStagingWorkFileCountMapper;
+import com.arknightsinfrastructurestationbackend.mapper.user.ordinaryUser.UploadWorkFileCountMapper;
 import com.arknightsinfrastructurestationbackend.service.timedTasks.ScheduledTasksService;
 import org.junit.Before;
 import org.junit.Test;

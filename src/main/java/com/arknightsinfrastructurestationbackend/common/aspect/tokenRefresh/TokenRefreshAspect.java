@@ -2,9 +2,9 @@ package com.arknightsinfrastructurestationbackend.common.aspect.tokenRefresh;
 
 import com.arknightsinfrastructurestationbackend.common.tools.Token;
 import com.arknightsinfrastructurestationbackend.config.filter.JWTUtil;
-import com.arknightsinfrastructurestationbackend.entitiy.commonUser.User;
-import com.arknightsinfrastructurestationbackend.service.commonUser.SelectUserService;
-import com.arknightsinfrastructurestationbackend.service.commonUser.UserService;
+import com.arknightsinfrastructurestationbackend.entitiy.user.ordinaryUser.User;
+import com.arknightsinfrastructurestationbackend.service.user.ordinaryUser.SelectUserService;
+import com.arknightsinfrastructurestationbackend.service.user.ordinaryUser.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AllArgsConstructor;
@@ -54,7 +54,7 @@ public class TokenRefreshAspect {
                 if (response != null && !response.isCommitted()) {
                     // 检查Token
                     String token = Token.getTokenByRequest(request);
-                    User user = selectUserService.getUserByToken(token);
+                    User user = selectUserService.getByToken(token);
                     if (jwtUtil.isTokenExpiringWithin(token, Duration.ofDays(7))) {
                         // 若Token将在一周内过期，重新生成
                         String newToken = jwtUtil.generateUniqueCommonUserToken(user.getId()); // 根据uid生成新Token

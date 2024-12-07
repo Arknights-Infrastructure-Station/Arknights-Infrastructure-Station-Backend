@@ -17,13 +17,13 @@ public class JsonWorkProcessor {
      * @return 返回调换后的JSON数据字符串。如果调换成功，hasExchange为true；如果失败，hasExchange为false。
      */
     public static OperateResult exchangeRoomDataForMower(String jsonData, String exchangeRequest) {
-//        Log.info("________________");
-//        Log.info(jsonData);
-//        Log.info(exchangeRequest);
+//        log.info("________________");
+//        log.info(jsonData);
+//        log.info(exchangeRequest);
         JSONObject originalJson = new JSONObject(jsonData);
         JSONObject orderJson = new JSONObject(exchangeRequest);
-//        Log.info(originalJson.toString());
-//        Log.info(orderJson.toString());
+//        log.info(originalJson.toString());
+//        log.info(orderJson.toString());
 
         // 步骤1：从originalJson中获取plan1属性下的所有以“room”开头的属性的name属性
         JSONObject plan1 = originalJson.getJSONObject("plan1");
@@ -42,8 +42,8 @@ public class JsonWorkProcessor {
         for (String key : keySet) {
             compareArray2.add(orderList.getString(key));
         }
-//        Log.info(compareArray1.toString());
-//        Log.info(compareArray2.toString());
+//        log.info(compareArray1.toString());
+//        log.info(compareArray2.toString());
         // 步骤3：检查作业基建布局和用户基建布局是否一开始就相等
         boolean isEqual = compareArray1.equals(compareArray2);
         if (isEqual)

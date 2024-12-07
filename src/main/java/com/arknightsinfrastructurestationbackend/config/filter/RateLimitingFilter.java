@@ -1,23 +1,19 @@
 package com.arknightsinfrastructurestationbackend.config.filter;
 
-import com.arknightsinfrastructurestationbackend.common.tools.Log;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.FilterConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
+import jakarta.servlet.*;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @WebFilter(urlPatterns = "/*")
 public class RateLimitingFilter implements Filter {
 
@@ -47,7 +43,7 @@ public class RateLimitingFilter implements Filter {
             try {
                 requestCount = requestCountsPerIpAddress.get(clientIpAddress, AtomicInteger::new);
             } catch (ExecutionException e) {
-                Log.error(e.getMessage());
+                log.error(e.getMessage());
                 httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "服务器内部错误");
                 return;
             }

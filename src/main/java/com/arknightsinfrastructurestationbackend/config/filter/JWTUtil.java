@@ -1,10 +1,10 @@
 package com.arknightsinfrastructurestationbackend.config.filter;
 
-import com.arknightsinfrastructurestationbackend.entitiy.adminUser.AdminUser;
-import com.arknightsinfrastructurestationbackend.entitiy.commonUser.User;
+import com.arknightsinfrastructurestationbackend.entitiy.user.adminUser.AdminUser;
+import com.arknightsinfrastructurestationbackend.entitiy.user.ordinaryUser.User;
 import com.arknightsinfrastructurestationbackend.global.type.UserType;
-import com.arknightsinfrastructurestationbackend.service.adminUser.SelectAdminUserService;
-import com.arknightsinfrastructurestationbackend.service.commonUser.SelectUserService;
+import com.arknightsinfrastructurestationbackend.service.user.adminUser.SelectAdminUserService;
+import com.arknightsinfrastructurestationbackend.service.user.ordinaryUser.SelectUserService;
 import io.jsonwebtoken.*;
 import jakarta.annotation.Resource;
 import lombok.RequiredArgsConstructor;
@@ -33,7 +33,7 @@ public class JWTUtil {
      * @return token
      */
     public String generateUserToken(Long uid) {
-        return generateToken(uid, UserType.COMMON_USER.getName());
+        return generateToken(uid, UserType.ORDINARY_USER.getName());
     }
 
     /**
@@ -97,7 +97,7 @@ public class JWTUtil {
      * @return 唯一的 Token
      */
     public String generateUniqueCommonUserToken(Long uid) {
-        return generateUniqueToken(uid, UserType.COMMON_USER.getName());
+        return generateUniqueToken(uid, UserType.ORDINARY_USER.getName());
     }
 
     /**
@@ -125,9 +125,9 @@ public class JWTUtil {
         do {
             token = generateToken(uid, userType);
             attempts++;
-            if (UserType.COMMON_USER.getName().equals(userType)) {
+            if (UserType.ORDINARY_USER.getName().equals(userType)) {
                 // 检查用户 Token 是否唯一
-                if (selectUserService.getUserByToken(token) == null) {
+                if (selectUserService.getByToken(token) == null) {
                     break;
                 }
             } else if (UserType.ADMIN_USER.getName().equals(userType)) {
@@ -204,7 +204,7 @@ public class JWTUtil {
     public Boolean validateUserToken(String token, User user) {
         final Long uid = extractUid(token);
         final String userType = extractUserType(token);
-        return (UserType.COMMON_USER.getName().equals(userType)) &&
+        return (UserType.ORDINARY_USER.getName().equals(userType)) &&
                 (uid.equals(user.getId())) &&
                 !isTokenExpired(token);
     }

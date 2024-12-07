@@ -1,6 +1,6 @@
 package com.arknightsinfrastructurestationbackend.service.utils;
 
-import com.arknightsinfrastructurestationbackend.entitiy.commonUser.User;
+import com.arknightsinfrastructurestationbackend.entitiy.user.ordinaryUser.User;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.StagingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;

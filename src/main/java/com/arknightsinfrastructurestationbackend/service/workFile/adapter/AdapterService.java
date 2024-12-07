@@ -4,7 +4,7 @@ import com.arknightsinfrastructurestationbackend.common.tools.JsonWorkProcessor;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.dto.query.adminUser.StarRecordAdminScreen;
 import com.arknightsinfrastructurestationbackend.dto.query.adminUser.WorkFileAdminScreen;
-import com.arknightsinfrastructurestationbackend.dto.query.commonUser.WorkFileSimpleSearch;
+import com.arknightsinfrastructurestationbackend.dto.query.ordinaryUser.WorkFileSimpleSearch;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;

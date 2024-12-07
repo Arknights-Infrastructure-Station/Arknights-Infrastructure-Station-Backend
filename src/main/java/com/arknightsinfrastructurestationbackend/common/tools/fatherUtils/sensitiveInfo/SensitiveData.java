@@ -1,10 +1,33 @@
 package com.arknightsinfrastructurestationbackend.common.tools.fatherUtils.sensitiveInfo;
 
-import com.arknightsinfrastructurestationbackend.common.tools.Log;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 
+@Slf4j
 public abstract class SensitiveData {
+    private static String maskSensitiveData(String value, int start, int end) {
+        // 计算需要脱敏的部分
+        int maskLength = value.length() - start - end;
+
+        if (maskLength <= 0) {
+            // 如果原始字符串长度不足以保留指定的start和end个字符，直接返回原始字符串
+            return value;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        // 添加保留的前start个字符
+        builder.append(value, 0, start);
+
+        // 用星号替换中间的部分
+        builder.append("*".repeat(maskLength));
+
+        // 添加保留的后end个字符
+        builder.append(value, value.length() - end, value.length());
+
+        return builder.toString();
+    }
+
     public void handleSensitiveData() {
         Field[] fields = this.getClass().getDeclaredFields();
         for (Field field : fields) {
@@ -22,34 +45,10 @@ public abstract class SensitiveData {
                         field.set(this, maskedValue);
                     }
                 } catch (IllegalAccessException e) {
-                    Log.error("脱敏失败：" + e.getMessage());
+                    log.error("脱敏失败：{}", e.getMessage());
                 }
             }
         }
-    }
-
-    private static String maskSensitiveData(String value, int start, int end) {
-        // 计算需要脱敏的部分
-        int maskLength = value.length() - start - end;
-
-        if (maskLength <= 0) {
-            // 如果原始字符串长度不足以保留指定的start和end个字符，直接返回原始字符串
-            return value;
-        }
-
-        StringBuilder builder = new StringBuilder();
-        // 添加保留的前start个字符
-        builder.append(value, 0, start);
-
-        // 用星号替换中间的部分
-        for (int i = 0; i < maskLength; i++) {
-            builder.append("*");
-        }
-
-        // 添加保留的后end个字符
-        builder.append(value, value.length() - end, value.length());
-
-        return builder.toString();
     }
 
 

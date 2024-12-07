@@ -1,11 +1,11 @@
 package com.arknightsinfrastructurestationbackend.config.filter;
 
 import com.arknightsinfrastructurestationbackend.config.data.SecurityPaths;
-import com.arknightsinfrastructurestationbackend.entitiy.adminUser.AdminUser;
-import com.arknightsinfrastructurestationbackend.entitiy.commonUser.User;
+import com.arknightsinfrastructurestationbackend.entitiy.user.adminUser.AdminUser;
+import com.arknightsinfrastructurestationbackend.entitiy.user.ordinaryUser.User;
 import com.arknightsinfrastructurestationbackend.global.type.UserType;
-import com.arknightsinfrastructurestationbackend.service.adminUser.SelectAdminUserService;
-import com.arknightsinfrastructurestationbackend.service.commonUser.SelectUserService;
+import com.arknightsinfrastructurestationbackend.service.user.adminUser.SelectAdminUserService;
+import com.arknightsinfrastructurestationbackend.service.user.ordinaryUser.SelectUserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -78,7 +78,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
 
         switch (requestType) {
             case "UserRequest":
-                if (!UserType.COMMON_USER.getName().equals(userType)) {
+                if (!UserType.ORDINARY_USER.getName().equals(userType)) {
                     unauthorizedResponse(response, "请求类型与 Token 类型不匹配");
                     return;
                 }
@@ -99,7 +99,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     private void handleUserRequest(String jwt, HttpServletRequest request,
                                    HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        User user = selectUserService.getUserByToken(jwt);
+        User user = selectUserService.getByToken(jwt);
         if (user != null && jwtUtil.validateUserToken(jwt, user)) {
             setSecurityContext(user, request);
             chain.doFilter(request, response);

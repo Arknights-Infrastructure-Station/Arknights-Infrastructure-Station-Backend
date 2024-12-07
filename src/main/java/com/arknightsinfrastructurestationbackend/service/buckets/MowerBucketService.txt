@@ -2,7 +2,6 @@ package com.arknightsinfrastructurestationbackend.service.buckets;
 
 import com.arknightsinfrastructurestationbackend.common.aspect.redisLock.RedisLock;
 import com.arknightsinfrastructurestationbackend.common.exception.ServiceException;
-import com.arknightsinfrastructurestationbackend.common.tools.Log;
 import com.obs.services.ObsClient;
 import com.obs.services.exception.ObsException;
 import com.obs.services.model.ObsObject;
@@ -53,21 +52,21 @@ public class MowerBucketService {
             obsClient.putObject(bucketName, key, tempFile);
             return key;
         } catch (ObsException e) {
-            Log.error("putObject failed");
+            log.error("putObject failed");
             // 请求失败,打印http状态码
-            Log.error("HTTP Code:" + e.getResponseCode());
+            log.error("HTTP Code:" + e.getResponseCode());
             // 请求失败,打印服务端错误码
-            Log.error("Error Code:" + e.getErrorCode());
+            log.error("Error Code:" + e.getErrorCode());
             // 请求失败,打印详细错误信息
-            Log.error("Error Message:" + e.getErrorMessage());
+            log.error("Error Message:" + e.getErrorMessage());
             // 请求失败,打印请求id
-            Log.error("Request ID:" + e.getErrorRequestId());
-            Log.error("Host ID:" + e.getErrorHostId());
+            log.error("Request ID:" + e.getErrorRequestId());
+            log.error("Host ID:" + e.getErrorHostId());
             if (key != null) {
                 webpKeysService.deleteKey(key);
             }
         } catch (Exception e) {
-            Log.error("putObject failed" + e.getMessage());
+            log.error("putObject failed" + e.getMessage());
         }
         return null; //返回null代表对象存储失败
     }
@@ -95,14 +94,14 @@ public class MowerBucketService {
 
             return new InputStreamResource(new java.io.FileInputStream(tempFile));
         } catch (ObsException e) {
-            Log.error("getObjectContent failed");
-            Log.error("HTTP Code:" + e.getResponseCode());
-            Log.error("Error Code:" + e.getErrorCode());
-            Log.error("Error Message:" + e.getErrorMessage());
-            Log.error("Request ID:" + e.getErrorRequestId());
-            Log.error("Host ID:" + e.getErrorHostId());
+            log.error("getObjectContent failed");
+            log.error("HTTP Code:" + e.getResponseCode());
+            log.error("Error Code:" + e.getErrorCode());
+            log.error("Error Message:" + e.getErrorMessage());
+            log.error("Request ID:" + e.getErrorRequestId());
+            log.error("Host ID:" + e.getErrorHostId());
         } catch (Exception e) {
-            Log.error("getObjectContent failed" + e.getMessage());
+            log.error("getObjectContent failed" + e.getMessage());
         }
         return null;
     }
@@ -136,16 +135,16 @@ public class MowerBucketService {
         try {
             webpKeysService.deleteKey(objectKey);
             obsClient.deleteObject(bucketName, objectKey);
-            Log.error("deleteObject successfully");
+            log.error("deleteObject successfully");
         } catch (ObsException e) {
-            Log.error("deleteObject failed");
-            Log.error("HTTP Code:" + e.getResponseCode());
-            Log.error("Error Code:" + e.getErrorCode());
-            Log.error("Error Message:" + e.getErrorMessage());
-            Log.error("Request ID:" + e.getErrorRequestId());
-            Log.error("Host ID:" + e.getErrorHostId());
+            log.error("deleteObject failed");
+            log.error("HTTP Code:" + e.getResponseCode());
+            log.error("Error Code:" + e.getErrorCode());
+            log.error("Error Message:" + e.getErrorMessage());
+            log.error("Request ID:" + e.getErrorRequestId());
+            log.error("Host ID:" + e.getErrorHostId());
         } catch (Exception e) {
-            Log.error("deleteObject failed");
+            log.error("deleteObject failed");
         }
     }
 }

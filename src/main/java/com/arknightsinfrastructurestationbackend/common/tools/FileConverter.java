@@ -1,16 +1,18 @@
 package com.arknightsinfrastructurestationbackend.common.tools;
 
-import com.arknightsinfrastructurestationbackend.entitiy.commonUser.UserRate;
+import com.arknightsinfrastructurestationbackend.entitiy.user.ordinaryUser.UserRate;
 import com.arknightsinfrastructurestationbackend.dto.wrapperClass.*;
-import com.arknightsinfrastructurestationbackend.entitiy.commonUser.StarRecord;
+import com.arknightsinfrastructurestationbackend.entitiy.user.ordinaryUser.StarRecord;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.RecyclingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.StagingWorkFile;
 import com.arknightsinfrastructurestationbackend.entitiy.workFile.WorkFile;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class FileConverter {
     private static void copyProperties(Object source, Object target) {
         Field[] sourceFields = source.getClass().getDeclaredFields();
@@ -39,7 +41,7 @@ public class FileConverter {
 
                 targetField.set(target, value);
             } catch (IllegalAccessException e) {
-                Log.error(e.getMessage());
+                log.error(e.getMessage());
             }
         }
     }

@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum UserType {
     ADMIN_USER("AdminUser"),
-    COMMON_USER("CommonUser");
+    ORDINARY_USER("OrdinaryUser");
 
     private final String name;
 
