@@ -55,16 +55,8 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         }
 
         String jwt = authorizationHeader.substring(7);
-        Long uid;
-        String userType;
-
-        try {
-            uid = jwtUtil.extractUid(jwt);
-            userType = jwtUtil.extractUserType(jwt);
-        } catch (Exception e) {
-            unauthorizedResponse(response, "令牌无效或格式错误");
-            return;
-        }
+        Long uid = jwtUtil.extractUid(jwt);
+        String userType = jwtUtil.extractUserType(jwt);
 
         if (uid == null || userType == null) {
             unauthorizedResponse(response, "令牌无效或用户未通过身份验证");
