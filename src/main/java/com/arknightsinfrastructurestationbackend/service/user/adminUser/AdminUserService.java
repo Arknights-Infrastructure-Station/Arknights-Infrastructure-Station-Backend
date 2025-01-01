@@ -2,7 +2,8 @@ package com.arknightsinfrastructurestationbackend.service.user.adminUser;
 
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.config.filter.JWTUtil;
-import com.arknightsinfrastructurestationbackend.dto.user.ordinaryUser.UserLRFData;
+import com.arknightsinfrastructurestationbackend.dto.info.adminUser.AdminUserInfo;
+import com.arknightsinfrastructurestationbackend.dto.user.UserLRFData;
 import com.arknightsinfrastructurestationbackend.entitiy.user.adminUser.AdminUser;
 import com.arknightsinfrastructurestationbackend.mapper.user.adminUser.AdminUserMapper;
 import com.arknightsinfrastructurestationbackend.service.email.VerificationAttemptService;
@@ -134,7 +135,6 @@ public class AdminUserService extends BaseCommonUserService<AdminUser> {
         return adminUserMapper.selectById(uid);
     }
 
-    // 特定于Admin用户的更新邮箱和密码操作可直接使用父类的逻辑，如有需要可覆盖
     public OperateResult updateAdminEmail(String token, String newEmail, String verificationCode, String ipAddress) {
         if (emailExists(newEmail)) {
             return new OperateResult(409, "邮箱已被占用");
@@ -168,6 +168,30 @@ public class AdminUserService extends BaseCommonUserService<AdminUser> {
         setUserPassword(adminUser, passwordEncoder.encode(newPassword));
         updateUser(adminUser);
         return new OperateResult(200, "密码更新成功");
+    }
+
+    /**
+     * 获取管理员用户信息
+     */
+    public AdminUserInfo getAdminUserInfo(String token, boolean isSensitive) throws IllegalAccessException {
+        AdminUserInfo adminUserInfo = searchAdminUserInfo(token);
+        if (adminUserInfo != null && isSensitive) {
+            adminUserInfo.handleSensitiveData();
+        }
+        return adminUserInfo;
+    }
+
+    private AdminUserInfo searchAdminUserInfo(String token) {
+        AdminUser adminUser = getUserByToken(token);
+        if (adminUser == null) {
+            return null;
+        }
+
+        AdminUserInfo adminUserInfo = new AdminUserInfo();
+        adminUserInfo.setId(String.valueOf(adminUserInfo.getId()));
+        adminUserInfo.setUsername(adminUserInfo.getUsername());
+        adminUserInfo.setEmail(adminUserInfo.getEmail());
+        return adminUserInfo;
     }
 
     public boolean deleteAdminUser(AdminUser user) {

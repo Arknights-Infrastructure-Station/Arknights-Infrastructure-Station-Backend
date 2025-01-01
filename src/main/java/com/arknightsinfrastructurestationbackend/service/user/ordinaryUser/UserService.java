@@ -3,10 +3,10 @@ package com.arknightsinfrastructurestationbackend.service.user.ordinaryUser;
 import com.arknightsinfrastructurestationbackend.common.tools.JsonWorkProcessor;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.config.filter.JWTUtil;
-import com.arknightsinfrastructurestationbackend.dto.info.InfrastructureInfo;
-import com.arknightsinfrastructurestationbackend.dto.info.OperatorInfo;
-import com.arknightsinfrastructurestationbackend.dto.info.UserInfo;
-import com.arknightsinfrastructurestationbackend.dto.user.ordinaryUser.UserLRFData;
+import com.arknightsinfrastructurestationbackend.dto.info.ordinaryUser.InfrastructureInfo;
+import com.arknightsinfrastructurestationbackend.dto.info.ordinaryUser.OperatorInfo;
+import com.arknightsinfrastructurestationbackend.dto.info.ordinaryUser.UserInfo;
+import com.arknightsinfrastructurestationbackend.dto.user.UserLRFData;
 import com.arknightsinfrastructurestationbackend.entitiy.user.ordinaryUser.User;
 import com.arknightsinfrastructurestationbackend.mapper.user.ordinaryUser.UserMapper;
 import com.arknightsinfrastructurestationbackend.service.email.VerificationAttemptService;
@@ -173,7 +173,7 @@ public class UserService extends BaseCommonUserService<User> {
     /**
      * 获取用户信息
      */
-    public UserInfo getUserInfo(String token, boolean isSensitive) {
+    public UserInfo getUserInfo(String token, boolean isSensitive) throws IllegalAccessException {
         UserInfo userInfo = searchUserInfo(token);
         if (userInfo != null && isSensitive) {
             userInfo.handleSensitiveData();
@@ -204,8 +204,6 @@ public class UserService extends BaseCommonUserService<User> {
         return userMapper.deleteById(user.getId()) > 0;
     }
 
-
-    // 实现抽象方法
     @Override
     protected User getUserByEmail(String email) {
         return selectUserService.getByEmail(email);

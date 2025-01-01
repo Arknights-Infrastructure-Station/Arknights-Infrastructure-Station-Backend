@@ -3,8 +3,8 @@ package com.arknightsinfrastructurestationbackend.controller.user.ordinaryUser;
 import com.arknightsinfrastructurestationbackend.common.aspect.tokenRefresh.ExcludeFromTokenRefresh;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.common.tools.Token;
-import com.arknightsinfrastructurestationbackend.dto.info.UserInfo;
-import com.arknightsinfrastructurestationbackend.dto.user.ordinaryUser.UserLRFData;
+import com.arknightsinfrastructurestationbackend.dto.info.ordinaryUser.UserInfo;
+import com.arknightsinfrastructurestationbackend.dto.user.UserLRFData;
 import com.arknightsinfrastructurestationbackend.dto.user.ordinaryUser.UserLoginResponse;
 import com.arknightsinfrastructurestationbackend.service.user.ordinaryUser.EmailService;
 import com.arknightsinfrastructurestationbackend.service.user.ordinaryUser.UserService;
@@ -21,7 +21,7 @@ import java.util.Collections;
 @RequestMapping("/api/lrf")
 @AllArgsConstructor
 @ExcludeFromTokenRefresh
-public class LRFController {
+public class UserLRFController {
     private final UserService userService;
     private final EmailService emailService;
 
@@ -31,7 +31,7 @@ public class LRFController {
      * @param userLRFData 用户填写的表单数据
      */
     @PostMapping("/login")
-    public ResponseEntity<?> login(HttpServletRequest request, @RequestBody UserLRFData userLRFData) {
+    public ResponseEntity<?> login(HttpServletRequest request, @RequestBody UserLRFData userLRFData) throws IllegalAccessException {
         userLRFData.setIpAddress(userService.getUserIpFromRequest(request));
         String oldToken = Token.getTokenByRequest(request);
         OperateResult loginResult = userService.login(userLRFData, oldToken);

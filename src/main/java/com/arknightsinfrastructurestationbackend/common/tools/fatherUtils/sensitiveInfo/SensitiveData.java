@@ -1,12 +1,11 @@
 package com.arknightsinfrastructurestationbackend.common.tools.fatherUtils.sensitiveInfo;
 
-import lombok.extern.slf4j.Slf4j;
-
 import java.lang.reflect.Field;
 
-@Slf4j
-public abstract class SensitiveData {
-    private static String maskSensitiveData(String value, int start, int end) {
+public interface SensitiveData {
+
+    // 默认方法，保持原有的脱敏逻辑
+    default String maskSensitiveData(String value, int start, int end) {
         // 计算需要脱敏的部分
         int maskLength = value.length() - start - end;
 
@@ -25,7 +24,8 @@ public abstract class SensitiveData {
                 value.substring(value.length() - end);
     }
 
-    public void handleSensitiveData() {
+    // 处理敏感数据的脱敏逻辑
+    default void handleSensitiveData() throws IllegalAccessException {
         Field[] fields = this.getClass().getDeclaredFields();
         for (Field field : fields) {
             SensitiveInfo annotation = field.getAnnotation(SensitiveInfo.class);
@@ -42,11 +42,9 @@ public abstract class SensitiveData {
                         field.set(this, maskedValue);
                     }
                 } catch (IllegalAccessException e) {
-                    log.error("脱敏失败：{}", e.getMessage());
+                    throw new IllegalAccessException("脱敏失败：" + e.getMessage());
                 }
             }
         }
     }
-
-
 }

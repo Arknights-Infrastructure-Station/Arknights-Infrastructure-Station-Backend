@@ -2,7 +2,8 @@ package com.arknightsinfrastructurestationbackend.service.user.commonUser;
 
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.config.filter.JWTUtil;
-import com.arknightsinfrastructurestationbackend.dto.user.ordinaryUser.UserLRFData;
+import com.arknightsinfrastructurestationbackend.dto.user.UserLRFData;
+import com.arknightsinfrastructurestationbackend.entitiy.user.commonUser.BaseUser;
 import com.arknightsinfrastructurestationbackend.service.email.VerificationAttemptService;
 import com.arknightsinfrastructurestationbackend.service.user.ordinaryUser.EmailService;
 import com.arknightsinfrastructurestationbackend.service.utils.CommonService;
@@ -15,7 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Slf4j
 @AllArgsConstructor
-public abstract class BaseCommonUserService<U> {
+public abstract class BaseCommonUserService<U extends BaseUser> {
     protected final BaseMapper<U> userMapper;
     protected final PasswordEncoder passwordEncoder;
     protected final EmailService emailService;

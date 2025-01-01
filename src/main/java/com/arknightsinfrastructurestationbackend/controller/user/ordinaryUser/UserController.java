@@ -3,11 +3,11 @@ package com.arknightsinfrastructurestationbackend.controller.user.ordinaryUser;
 import com.arknightsinfrastructurestationbackend.common.aspect.tokenRefresh.ExcludeFromTokenRefresh;
 import com.arknightsinfrastructurestationbackend.common.tools.OperateResult;
 import com.arknightsinfrastructurestationbackend.common.tools.Token;
-import com.arknightsinfrastructurestationbackend.dto.info.InfrastructureInfo;
-import com.arknightsinfrastructurestationbackend.dto.info.OperatorInfo;
-import com.arknightsinfrastructurestationbackend.dto.info.UserInfo;
-import com.arknightsinfrastructurestationbackend.dto.user.ordinaryUser.UserChangeEmail;
-import com.arknightsinfrastructurestationbackend.dto.user.ordinaryUser.UserChangePassword;
+import com.arknightsinfrastructurestationbackend.dto.info.ordinaryUser.InfrastructureInfo;
+import com.arknightsinfrastructurestationbackend.dto.info.ordinaryUser.OperatorInfo;
+import com.arknightsinfrastructurestationbackend.dto.info.ordinaryUser.UserInfo;
+import com.arknightsinfrastructurestationbackend.dto.user.UserChangeEmail;
+import com.arknightsinfrastructurestationbackend.dto.user.UserChangePassword;
 import com.arknightsinfrastructurestationbackend.service.user.ordinaryUser.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -47,7 +47,7 @@ public class UserController {
     // 更新用户名称
     @PutMapping("/updateUsername")
     public ResponseEntity<Object> updateUserName(HttpServletRequest request,
-                                                 @RequestBody String newName) {
+                                                 @RequestBody String newName) throws IllegalAccessException {
         String token = Token.getTokenByRequest(request);
         OperateResult result = userService.updateUserName(token, newName);
         UserInfo userInfo = userService.getUserInfo(token, true);
@@ -57,7 +57,7 @@ public class UserController {
     // 更新用户邮箱
     @PutMapping("/updateEmail")
     public ResponseEntity<Object> updateUserEmail(HttpServletRequest request,
-                                                  @RequestBody UserChangeEmail userChangeEmail) {
+                                                  @RequestBody UserChangeEmail userChangeEmail) throws IllegalAccessException {
         String token = Token.getTokenByRequest(request);
         String ip = userService.getUserIpFromRequest(request);
         OperateResult result = userService.updateUserEmail(token, userChangeEmail.getNewEmail(), userChangeEmail.getVerificationCode(), ip);
@@ -68,7 +68,7 @@ public class UserController {
     // 更新用户密码
     @PostMapping("/updatePassword")
     public ResponseEntity<Object> updateUserPassword(HttpServletRequest request,
-                                                     @RequestBody UserChangePassword userChangePassword) {
+                                                     @RequestBody UserChangePassword userChangePassword) throws IllegalAccessException {
         String token = Token.getTokenByRequest(request);
         OperateResult result = userService.updateUserPassword(token, userChangePassword.getOldPassword(), userChangePassword.getNewPassword());
         UserInfo userInfo = userService.getUserInfo(token, true);
@@ -78,7 +78,7 @@ public class UserController {
     // 更新用户头像
     @PutMapping("/updateAvatar")
     public ResponseEntity<Object> updateUserAvatar(HttpServletRequest request,
-                                                   @RequestBody String newAvatar) {
+                                                   @RequestBody String newAvatar) throws IllegalAccessException {
         String token = Token.getTokenByRequest(request);
         OperateResult result = userService.updateUserAvatar(token, newAvatar);
         UserInfo userInfo = userService.getUserInfo(token, true);
@@ -88,7 +88,7 @@ public class UserController {
     // 更新干员养成练度
     @PutMapping("/updateOperators")
     public ResponseEntity<Object> updateUserOperators(HttpServletRequest request,
-                                                      @RequestBody List<OperatorInfo> operatorInfoList) {
+                                                      @RequestBody List<OperatorInfo> operatorInfoList) throws IllegalAccessException {
         String token = Token.getTokenByRequest(request);
         OperateResult result;
         try {
@@ -104,7 +104,7 @@ public class UserController {
     // 更新基建排布配置
     @PutMapping("/updateInfrastructure")
     public ResponseEntity<Object> updateUserInfrastructure(HttpServletRequest request,
-                                                           @RequestBody List<InfrastructureInfo> infrastructureInfoList) {
+                                                           @RequestBody List<InfrastructureInfo> infrastructureInfoList) throws IllegalAccessException {
         String token = Token.getTokenByRequest(request);
         OperateResult result;
         try {

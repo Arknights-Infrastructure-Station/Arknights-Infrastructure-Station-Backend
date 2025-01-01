@@ -1,7 +1,7 @@
 package com.arknightsinfrastructurestationbackend.controller.workFile;
 
 import com.arknightsinfrastructurestationbackend.common.aspect.tokenRefresh.ExcludeFromTokenRefresh;
-import com.arknightsinfrastructurestationbackend.dto.info.AdaptInfo;
+import com.arknightsinfrastructurestationbackend.dto.info.ordinaryUser.AdaptInfo;
 import com.arknightsinfrastructurestationbackend.service.workFile.adapter.AdapterService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
