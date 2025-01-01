@@ -135,7 +135,23 @@ public class AdminUserService extends BaseCommonUserService<AdminUser> {
         return adminUserMapper.selectById(uid);
     }
 
-    public OperateResult updateAdminEmail(String token, String newEmail, String verificationCode, String ipAddress) {
+    /**
+     * 更新管理员名称
+     */
+    public OperateResult updateAdminUserName(String token, String newName) {
+        AdminUser adminUser = getUserByToken(token);
+        if (adminUser == null) {
+            return new OperateResult(404, "用户未找到");
+        }
+        adminUser.setUsername(newName);
+        updateUser(adminUser);
+        return new OperateResult(200, "名称更新成功");
+    }
+
+    /**
+     * 更新管理员邮箱
+     */
+    public OperateResult updateAdminUserEmail(String token, String newEmail, String verificationCode, String ipAddress) {
         if (emailExists(newEmail)) {
             return new OperateResult(409, "邮箱已被占用");
         }
@@ -155,7 +171,10 @@ public class AdminUserService extends BaseCommonUserService<AdminUser> {
         return new OperateResult(200, "邮箱更新成功");
     }
 
-    public OperateResult updateAdminPassword(String token, String oldPassword, String newPassword) {
+    /**
+     * 更新管理员密码
+     */
+    public OperateResult updateAdminUserPassword(String token, String oldPassword, String newPassword) {
         AdminUser adminUser = getUserByToken(token);
         if (adminUser == null) {
             return new OperateResult(404, "用户未找到");
